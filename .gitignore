@@ -1,0 +1,10 @@
+*~
+*.pyc
+/bin/flake8
+/bin/ipython
+/bin/pip
+/bin/nosetests
+/bower_components/
+/node_modules/
+
+/etc/config.ini

@@ -1,0 +1,40 @@
+
+
+
+
+Write interface
+---------------
+
+The storage server allows making changes to the dataset.  A series of changes is itself a separate
+append-only dataset.  Each change should be described using the
+[changeset](http://vocab.org/changeset/schema.html) vocabulary.  You can submit a set of changes
+as a POST request to the collection of edits at /edits/.
+
+Example changeset: http://tinyurl.com/kyzxmwt
+
+
+Read interface
+--------------
+
+The read interface exposes two datasets, /edits/ and /dataset/.
+
+Both datasets are exposed using a Linked Data Fragments server:
+
+https://github.com/LinkedDataFragments/Server.js
+
+
+Multiple databases
+------------------
+
+wald-storage can host multiple databases, each database consists of the dataset itself and the
+history of changes (the associated edits dataset).  If you for example run a videogame website
+you may want to stare videogame data in a dataset and store your user profiles in a separate
+dataset, resulting on these backend base URLs:
+
+    https://example.com/games/edits/
+    https://example.com/games/dataset/
+
+    https://example.com/users/edits/
+    https://example.com/users/dataset/
+
+

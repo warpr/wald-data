@@ -1,0 +1,28 @@
+#!/usr/bin/env python
+
+#   This file is part of wald:meta
+#   Copyright (C) 2014  Kuno Woudt <kuno@frob.nl>
+#
+#   This program is free software: you can redistribute it and/or modify
+#   it under the terms of copyleft-next 0.3.0.  See LICENSE.txt.
+
+from __future__ import absolute_import
+from __future__ import print_function
+from __future__ import unicode_literals
+
+import os
+import sys
+import activate
+from os.path import abspath, dirname
+
+activate.uninstalled ()
+activate.virtualenv ('waldmeta')
+
+if __name__ == '__main__':
+    import wald.storage.config
+
+    project_root = dirname(dirname(abspath(__file__)))
+    wald.storage.config.init(project_root)
+
+    print ("dburi:", wald.storage.config.dburi)
+

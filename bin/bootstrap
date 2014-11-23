@@ -1,0 +1,57 @@
+#!/bin/bash
+
+function req {
+    echo "virtualenv and pip are required, on debian or ubuntu you can install these with:"
+    echo ""
+    echo "    sudo apt-get install python-virtualenv python-pip"
+    echo ""
+    exit 1
+}
+
+function link_bin {
+    rm -f "bin/$2"
+    ln -s "$1/$2" "bin/$2"
+}
+
+if [ ! -x bin/bootstrap ]; then
+    echo "Please run bin/bootstrap from the project root."
+    exit 1
+fi
+
+DATA_HOME="${HOME}/.local/share"
+if [ -n "${XDG_DATA_HOME}" ]; then
+    DATA_HOME="${XDG_DATA_HOME}"
+fi
+
+VIRTUALENV=`which virtualenv`
+if [ -z "$VIRTUALENV" ]; then
+    req
+fi
+
+PIP=`which pip`
+if [ -z "$PIP" ]; then
+    req
+fi
+
+PIP="${DATA_HOME}/waldmeta/virtualenv/bin/pip"
+if [ ! -x $PIP ]; then
+    $VIRTUALENV "${DATA_HOME}/waldmeta/virtualenv"
+fi
+
+if [ -x $PIP ]; then
+    $PIP install --requirement=requirements.txt
+else
+    echo "There was an error installing the virtualenv."
+    echo "Could not find pip at $PIP."
+fi
+
+BIN="${DATA_HOME}/waldmeta/virtualenv/bin"
+link_bin "$BIN" pip
+link_bin "$BIN" nosetests
+link_bin "$BIN" ipython
+link_bin "$BIN" flake8
+
+if [ ! -e etc/config.ini ]; then
+    cp etc/config.example.ini etc/config.ini
+    chmod go-r etc/config.ini
+fi
