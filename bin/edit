@@ -1,0 +1,56 @@
+#!/usr/bin/env python
+
+#   This file is part of wald:meta
+#   Copyright (C) 2014  Kuno Woudt <kuno@frob.nl>
+#
+#   This program is free software: you can redistribute it and/or modify
+#   it under the terms of copyleft-next 0.3.0.  See LICENSE.txt.
+
+from __future__ import absolute_import
+from __future__ import print_function
+from __future__ import unicode_literals
+
+import os
+import sys
+import activate
+from os.path import abspath, dirname
+
+activate.uninstalled ()
+activate.virtualenv ('waldmeta')
+
+import wald.storage.setup
+
+def add_kuno(graph):
+    import rdflib
+    from rdflib.namespace import FOAF, RDF
+    from rdflib.term import URIRef
+
+    me = URIRef('https://frob.nl/#me')
+    a = RDF.type
+
+    triple = (me, a, FOAF.Person)
+    graph.dataset.add (triple)
+
+
+if __name__ == '__main__':
+    project_root = dirname(dirname(abspath(__file__)))
+    graphs = wald.storage.setup.load(project_root)
+
+    # This is a temporary script to process edits on the command line.
+
+    if len(sys.argv) < 2:
+        print ("Usage: bin/edit <dataset>")
+        sys.exit (1)
+
+    graph = graphs[sys.argv[1]]
+    meta = graphs['meta']
+
+    # add_kuno(meta)
+    # meta.dataset.close()
+
+    import pprint
+    for s,p,o in meta.dataset:
+        pprint.pprint((s,p,o))
+
+
+

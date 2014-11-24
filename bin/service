@@ -10,19 +10,16 @@ from __future__ import absolute_import
 from __future__ import print_function
 from __future__ import unicode_literals
 
-import ConfigParser
-from os.path import join
+import os
+import sys
+import activate
+from os.path import abspath, dirname
 
-dburi = None
+activate.uninstalled ()
+activate.virtualenv ('waldmeta')
 
-def init(project_root):
-    global dburi
+import wald.storage.setup
 
-    config_ini = join(project_root, 'etc', 'config.ini')
-    config = ConfigParser.SafeConfigParser()
-    config.read(config_ini)
-    dburi = config.get('storage', 'dburi')
-
-
-
-
+if __name__ == '__main__':
+    project_root = dirname(dirname(abspath(__file__)))
+    graphs = wald.storage.setup.load(project_root)
