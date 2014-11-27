@@ -15,6 +15,8 @@ import rdflib.plugin
 import rdflib.store
 import re
 import ConfigParser
+import wald.storage.mint
+
 from collections import namedtuple
 from os.path import join
 
@@ -23,7 +25,7 @@ class InvalidDatasetName(Exception):
     pass
 
 
-class EditableDataset (namedtuple("EditableDataset", "dataset edits setup")):
+class EditableDataset (namedtuple("EditableDataset", "dataset edits mint setup")):
     pass
 
 
@@ -67,17 +69,25 @@ def save(setup, base_url, dataset):
 def graphs(setup, create=False):
     all_graphs = {}
 
+    mint = wald.storage.mint.initialize(setup)
+
     for dataset in setup.datasets:
         graphs = {}
 
+        dataset_identifier = setup.base_url + dataset + '/'
+
         for suffix in [ 'dataset', 'edits' ]:
-            identifier = setup.base_url + dataset + '/' + suffix
+            identifier = dataset_identifier + suffix + '/'
             print ("Initializing", identifier)
             store = rdflib.plugin.get("SQLAlchemy", rdflib.store.Store)(identifier=identifier)
             graphs[suffix] = rdflib.Graph(store, identifier=identifier)
             graphs[suffix].open(setup.dburi, create=create)
 
-        all_graphs[dataset] = EditableDataset(graphs['dataset'], graphs['edits'], setup)
+        all_graphs[dataset] = EditableDataset(
+            graphs['dataset'],
+            graphs['edits'],
+            mint.entity(dataset_identifier),
+            setup)
 
     return all_graphs
 
@@ -88,7 +98,7 @@ def initialize(project_root, base_url, dataset):
 
     # reload configuration
     setup = config(project_root)
-    graphs(setup, create=True)
+    return graphs(setup, create=True)
 
 
 def load(project_root):

@@ -13,6 +13,9 @@ wald-storage defaults to using postgresql as a datastore, and this documentation
 will be your setup.  It should work with any database supported by RDFLib-SQLAlchemy, but that is
 untested.
 
+Currently SQLAlchemy is also used to atomically mint sequential identifiers.
+
+
 Step 1.  Install and configure all your requirements
 ----------------------------------------------------
 

@@ -19,6 +19,7 @@ activate.uninstalled ()
 activate.virtualenv ('waldmeta')
 
 import wald.storage.setup
+import wald.storage.mint
 
 if __name__ == '__main__':
     if len(sys.argv) < 3:
@@ -32,5 +33,6 @@ if __name__ == '__main__':
     base_url = sys.argv[1]
     datasets = sys.argv[2]
 
-    wald.storage.setup.initialize(project_root, base_url, datasets)
+    graphs = wald.storage.setup.initialize(project_root, base_url, datasets)
+    wald.storage.mint.initialize(graphs['meta'].setup)
 

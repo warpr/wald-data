@@ -18,7 +18,10 @@ from os.path import abspath, dirname
 activate.uninstalled ()
 activate.virtualenv ('waldmeta')
 
+import wald.storage.edit
+import wald.storage.mint
 import wald.storage.setup
+import wald.storage.tools
 
 def add_kuno(graph):
     import rdflib
@@ -37,7 +40,6 @@ if __name__ == '__main__':
     graphs = wald.storage.setup.load(project_root)
 
     # This is a temporary script to process edits on the command line.
-
     if len(sys.argv) < 2:
         print ("Usage: bin/edit <dataset>")
         sys.exit (1)
@@ -45,12 +47,24 @@ if __name__ == '__main__':
     graph = graphs[sys.argv[1]]
     meta = graphs['meta']
 
+    import pprint
+    pprint.pprint([
+        meta.mint.edits.sequential(),
+        meta.mint.user.opaque(),
+        meta.mint.comments.sequential()
+    ])
+
+    # http://vocab.org/changeset/schema.html
+
     # add_kuno(meta)
     # meta.dataset.close()
 
+    # import pprint
+    # for s,p,o in meta.dataset:
+    #     pprint.pprint((s,p,o))
+
+    g = wald.storage.tools.parse(wald.storage.edit.test_changeset, format='json-ld')
     import pprint
-    for s,p,o in meta.dataset:
+    for s,p,o in g:
         pprint.pprint((s,p,o))
-
-
 
