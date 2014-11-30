@@ -1,16 +1,23 @@
 #!/bin/bash
 
 function req {
-    echo "virtualenv and pip are required, on debian or ubuntu you can install these with:"
+    echo "java is required, on debian or ubuntu you can install that with:"
     echo ""
-    echo "    sudo apt-get install python-virtualenv python-pip"
+    echo "    sudo apt-get install openjdk-7-jdk"
+    echo ""
+    echo "redis is required, on debian or ubuntu you can install that with:"
+    echo ""
+    echo "    sudo apt-get install redis-server"
     echo ""
     exit 1
 }
 
-function link_bin {
-    rm -f "bin/$2"
-    ln -s "$1/$2" "bin/$2"
+function checkbin {
+    BIN=`which $1`
+    if [ -z "$BIN" ]; then
+        echo "ERROR: $1 not found, please install $1"
+        exit 1
+    fi
 }
 
 if [ ! -x bin/bootstrap ]; then
@@ -23,35 +30,47 @@ if [ -n "${XDG_DATA_HOME}" ]; then
     DATA_HOME="${XDG_DATA_HOME}"
 fi
 
-VIRTUALENV=`which virtualenv`
-if [ -z "$VIRTUALENV" ]; then
+mkdir --parents "$DATA_HOME/waldmeta/tmp"
+
+JAVA=`which java`
+if [ -z "$JAVA" ]; then
     req
 fi
 
-PIP=`which pip`
-if [ -z "$PIP" ]; then
+REDIS=`which redis-cli`
+if [ -z "$REDIS" ]; then
     req
 fi
 
-PIP="${DATA_HOME}/waldmeta/virtualenv/bin/pip"
-if [ ! -x $PIP ]; then
-    $VIRTUALENV "${DATA_HOME}/waldmeta/virtualenv"
+checkbin wget
+checkbin sha1sum
+
+if [ ! -d neo4j ]; then
+    NEO_DIR="neo4j-community-2.1.6"
+    NEO_FILENAME="$NEO_DIR-unix.tar.gz"
+    DATA_TMP="$DATA_HOME/waldmeta/tmp"
+    NEO_SHA1=`pwd`/bin/setup/neo4j.sha1sum
+
+    cd "$DATA_TMP"
+    if ! sha1sum --check "$NEO_SHA1"; then
+        wget --continue "http://neo4j.com/artifact.php?name=$NEO_FILENAME" "--output-document=$NEO_FILENAME"
+    fi
+
+    if ! sha1sum --check "$NEO_SHA1"; then
+        echo "ERROR: failed to download neo4j"
+        exit 1
+    fi
+    cd -
+
+    tar xfz "$DATA_TMP/$NEO_FILENAME" && mv "$NEO_DIR" neo4j
+
+    if [ -x "neo4j/bin/neo4j" ]; then
+        echo "neo4j downloaded, run \"neo4j/bin/neo4j start\" to run the database"
+    else
+        echo "ERROR: failed to download and unpack neo4j"
+        exit 1
+    fi
 fi
 
-if [ -x $PIP ]; then
-    $PIP install --requirement=requirements.txt
-else
-    echo "There was an error installing the virtualenv."
-    echo "Could not find pip at $PIP."
-fi
-
-BIN="${DATA_HOME}/waldmeta/virtualenv/bin"
-link_bin "$BIN" pip
-link_bin "$BIN" nosetests
-link_bin "$BIN" ipython
-link_bin "$BIN" flake8
-
-if [ ! -e etc/config.ini ]; then
-    cp etc/config.example.ini etc/config.ini
-    chmod go-r etc/config.ini
-fi
+# setup python virtualenv
+bin/setup/python

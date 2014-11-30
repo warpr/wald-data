@@ -2,41 +2,26 @@
 wald-storage
 ============
 
-Implement a basic versioned triple store using:
-
-https://github.com/RDFLib/rdflib-sqlalchemy
-
-Getting Started
----------------
-
-wald-storage defaults to using postgresql as a datastore, and this documentation assumes that
-will be your setup.  It should work with any database supported by RDFLib-SQLAlchemy, but that is
-untested.
-
-Currently SQLAlchemy is also used to atomically mint sequential identifiers.
+wald-storage uses neo4j as a datastore, and redis to mint identifiers.
 
 
 Step 1.  Install and configure all your requirements
 ----------------------------------------------------
 
-Install postgresql and python if you don't have those installed yet, on Ubuntu run this:
+First, make sure you have java, redis and python installed.  And then run
+bin/bootstrap.  On Ubuntu you can run:
 
-    sudo apt-get install postgresql postgresql-client postgresql-doc postgresql-server-dev-all
-    sudo apt-get install python-virtualenv python-pip python
-
-Now run the bootstrap script to install any other required python dependencies:
-
+    sudo apt-get install openjdk-7-jdk redis-server
+    sudo apt-get install python-virtualenv python-pip
     bin/bootstrap
 
-[Create a database](http://www.postgresql.org/docs/9.3/static/app-createdb.html) and if necessary
-a [database user](http://www.postgresql.org/docs/9.3/static/client-authentication.html) with
-sufficient permissions to connect to the database and create tables in the database.
+Bootstrap will download neo4j, see
+[the neo4 documentation](http://neo4j.com/docs/stable/server-installation.html)
+for more information.  It will also install various third-party python libraries
+in a virtualenv.
 
-Determine the connection string to use, this should look something like:
 
-    postgresql+psycopg2://user:password@hostname:port/database
-
-Edit etc/config.ini and enter your connection string.
+____ FIXME: everything below this line is outdated ____
 
 
 Step 2. Creating your dataset
