@@ -25,6 +25,8 @@ if [ ! -x bin/bootstrap ]; then
     exit 1
 fi
 
+PROJECT_ROOT=`pwd`
+
 DATA_HOME="${HOME}/.local/share"
 if [ -n "${XDG_DATA_HOME}" ]; then
     DATA_HOME="${XDG_DATA_HOME}"
@@ -45,29 +47,29 @@ fi
 checkbin wget
 checkbin sha1sum
 
-if [ ! -d neo4j ]; then
-    NEO_DIR="neo4j-community-2.1.6"
-    NEO_FILENAME="$NEO_DIR-unix.tar.gz"
-    DATA_TMP="$DATA_HOME/waldmeta/tmp"
-    NEO_SHA1=`pwd`/bin/setup/neo4j.sha1sum
+PACKAGE_DIR="jena-fuseki-1.1.1"
+PACKAGE_FILENAME="$PACKAGE_DIR-distribution.tar.gz"
+DATA_TMP="$DATA_HOME/waldmeta/tmp"
+
+if [ ! -d marmotta ]; then
+    PACKAGE_SHA1=`pwd`/bin/setup/jena-fuseki.sha1sum
 
     cd "$DATA_TMP"
-    if ! sha1sum --check "$NEO_SHA1"; then
-        wget --continue "http://neo4j.com/artifact.php?name=$NEO_FILENAME" "--output-document=$NEO_FILENAME"
+    if ! sha1sum --check "$PACKAGE_SHA1"; then
+        wget --continue "http://apache.osuosl.org/jena/binaries/$PACKAGE_FILENAME" "--output-document=$PACKAGE_FILENAME"
     fi
 
-    if ! sha1sum --check "$NEO_SHA1"; then
-        echo "ERROR: failed to download neo4j"
+    if ! sha1sum --check "$PACKAGE_SHA1"; then
+        echo "ERROR: failed to download $PACKAGE_DIR"
         exit 1
     fi
     cd -
 
-    tar xfz "$DATA_TMP/$NEO_FILENAME" && mv "$NEO_DIR" neo4j
+    tar xfz "$DATA_TMP/$PACKAGE_FILENAME"
+    mv "$PACKAGE_DIR" jena-fuseki
 
-    if [ -x "neo4j/bin/neo4j" ]; then
-        echo "neo4j downloaded, run \"neo4j/bin/neo4j start\" to run the database"
-    else
-        echo "ERROR: failed to download and unpack neo4j"
+    if [ ! -x "jena-fuseki/fuseki-server" ]; then
+        echo "ERROR: failed to unpack $PACKAGE_DIR"
         exit 1
     fi
 fi

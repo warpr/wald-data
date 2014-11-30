@@ -15,10 +15,9 @@ bin/bootstrap.  On Ubuntu you can run:
     sudo apt-get install python-virtualenv python-pip
     bin/bootstrap
 
-Bootstrap will download neo4j, see
-[the neo4 documentation](http://neo4j.com/docs/stable/server-installation.html)
-for more information.  It will also install various third-party python libraries
-in a virtualenv.
+The bootstrap script will install various third-party python libraries in a virtualenv, and
+download Fuseki. Fuseki is the SPARQL server included in the Apache Jena project. See [the Fuseki
+documentation](https://jena.apache.org/documentation/serving_data/) for more information.
 
 
 ____ FIXME: everything below this line is outdated ____

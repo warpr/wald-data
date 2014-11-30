@@ -6,5 +6,5 @@
 /bin/nosetests
 /bower_components/
 /node_modules/
-/neo4j
+/marmotta
 /etc/config.ini

@@ -13,58 +13,77 @@ from __future__ import unicode_literals
 import os
 import sys
 import activate
+from collections import namedtuple
 from os.path import abspath, dirname
 
 activate.uninstalled ()
 activate.virtualenv ('waldmeta')
 
+import rdflib
+from rdflib.namespace import FOAF, RDF
+from rdflib.term import BNode, Literal, URIRef
+
 import wald.storage.edit
-import wald.storage.mint
-import wald.storage.setup
 import wald.storage.tools
 
-def add_kuno(graph):
-    import rdflib
-    from rdflib.namespace import FOAF, RDF
-    from rdflib.term import URIRef
+# import wald.storage.mint
+# import wald.storage.setup
 
-    me = URIRef('https://frob.nl/#me')
-    a = RDF.type
+# def add_kuno(graph):
+#     import rdflib
+#     from rdflib.namespace import FOAF, RDF
+#     from rdflib.term import URIRef
 
-    triple = (me, a, FOAF.Person)
-    graph.dataset.add (triple)
+#     me = URIRef('https://frob.nl/#me')
+#     a = RDF.type
 
+#     triple = (me, a, FOAF.Person)
+#     graph.dataset.add (triple)
 
 if __name__ == '__main__':
     project_root = dirname(dirname(abspath(__file__)))
-    graphs = wald.storage.setup.load(project_root)
-
-    # This is a temporary script to process edits on the command line.
-    if len(sys.argv) < 2:
-        print ("Usage: bin/edit <dataset>")
-        sys.exit (1)
-
-    graph = graphs[sys.argv[1]]
-    meta = graphs['meta']
 
     import pprint
-    pprint.pprint([
-        meta.mint.edits.sequential(),
-        meta.mint.user.opaque(),
-        meta.mint.comments.sequential()
-    ])
 
-    # http://vocab.org/changeset/schema.html
+    edits = URIRef('https://kuno.link/music/edits')
+    dataset = URIRef('https://kuno.link/music/dataset')
 
-    # add_kuno(meta)
-    # meta.dataset.close()
-
-    # import pprint
-    # for s,p,o in meta.dataset:
-    #     pprint.pprint((s,p,o))
+    edit_id = URIRef('https://kuno.link/music/edits/1')
 
     g = wald.storage.tools.parse(wald.storage.edit.test_changeset, format='json-ld')
-    import pprint
-    for s,p,o in g:
-        pprint.pprint((s,p,o))
+
+    changeset = wald.storage.edit.normalize(edit_id, g)
+    update = wald.storage.edit.sparql_update(None, changeset)
+
+    print (update)
+
+    # t = changeset.serialize(format='turtle')
+    # print (t)
+
+
+    # graphs = wald.storage.setup.load(project_root)
+
+    # # This is a temporary script to process edits on the command line.
+    # if len(sys.argv) < 2:
+    #     print ("Usage: bin/edit <dataset>")
+    #     sys.exit (1)
+
+    # graph = graphs[sys.argv[1]]
+    # meta = graphs['meta']
+
+    # import pprint
+    # pprint.pprint([
+    #     meta.mint.edits.sequential(),
+    #     meta.mint.user.opaque(),
+    #     meta.mint.comments.sequential()
+    # ])
+
+    # # http://vocab.org/changeset/schema.html
+
+    # # add_kuno(meta)
+    # # meta.dataset.close()
+
+    # # import pprint
+    # # for s,p,o in meta.dataset:
+    # #     pprint.pprint((s,p,o))
 
