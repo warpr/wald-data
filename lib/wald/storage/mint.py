@@ -127,8 +127,10 @@ class Mint(object):
 
 
 def initialize(setup):
-    return Mint(setup)
+    print ("ERROR: implement redis backed minter")
+    # return Mint(setup)
 
 def load(setup):
-    return Mint(setup)
+    print ("ERROR: implement redis backed minter")
+    # return Mint(setup)
 

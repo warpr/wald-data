@@ -1,0 +1,9 @@
+#!/bin/sh
+
+if [ ! -x bin/datastore ]; then
+    echo "Please run bin/datastore from the project root."
+    exit 1
+fi
+
+cd jena-fuseki
+./fuseki-server --update --config=../etc/fuseki.ttl

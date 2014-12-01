@@ -34,5 +34,9 @@ if __name__ == '__main__':
     datasets = sys.argv[2]
 
     graphs = wald.storage.setup.initialize(project_root, base_url, datasets)
-    wald.storage.mint.initialize(graphs['meta'].setup)
+
+    import pprint
+    pprint.pprint(graphs)
+
+    # wald.storage.mint.initialize(graphs['meta'].setup)
 

@@ -51,7 +51,7 @@ PACKAGE_DIR="jena-fuseki-1.1.1"
 PACKAGE_FILENAME="$PACKAGE_DIR-distribution.tar.gz"
 DATA_TMP="$DATA_HOME/waldmeta/tmp"
 
-if [ ! -d marmotta ]; then
+if [ ! -d jena-fuseki ]; then
     PACKAGE_SHA1=`pwd`/bin/setup/jena-fuseki.sha1sum
 
     cd "$DATA_TMP"
