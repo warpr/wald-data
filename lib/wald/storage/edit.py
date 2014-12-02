@@ -159,23 +159,21 @@ def filter_clause (filter, triples):
 
 
 def where_clause (graph_iri, removals, additions):
+    exists = ''
+    not_exists = ''
 
     # For those triples we want to DELETE, verify that they exist
-    exists = filter_clause("FILTER EXISTS", removals)
+    if removals:
+        exists = filter_clause("FILTER EXISTS", removals)
 
     # For those triples we want to INSERT, verify that they do not exist
-    not_exists = filter_clause("FILTER NOT EXISTS", additions)
+    if additions:
+        not_exists = filter_clause("FILTER NOT EXISTS", additions)
 
-    return ("    ?subject ?predicate ?object\n"
-            "    GRAPH %s\n    {\n%s\n%s\n    }" % (graph_iri.n3(), exists, not_exists))
+    return ("    GRAPH %s\n    {\n%s\n%s\n    }" % (graph_iri.n3(), exists, not_exists))
 
 
 def sparql_update(dataset, changeset):
-
-    edit_graph = URIRef('http://kuno.link/music/edits')
-    data_graph = URIRef('http://kuno.link/music/dataset')
-
-    import pprint
 
     removal_ids = []
     for s,o in changeset[:CS.removal:]:
@@ -188,12 +186,24 @@ def sparql_update(dataset, changeset):
     removals = [ unreify(changeset, iri) for iri in removal_ids ]
     additions = [ unreify(changeset, iri) for iri in addition_ids ]
 
+    if not removals and not additions:
+        return False
 
-    return "".join([
-        "DELETE\n{\n%s\n}\n" % (triples_clause(data_graph, removals)),
-        "INSERT\n{\n%s\n}\n" % (triples_clause(data_graph, additions)),
-        "WHERE\n{\n%s\n}\n" % (where_clause(data_graph, removals, additions))
-    ])
+    parts = []
+    if removals:
+        parts.append("DELETE\n{\n%s\n}\n" % (triples_clause(dataset.data_graph, removals)))
+
+    insert_additions = ''
+    if additions:
+        insert_additions = triples_clause(dataset.data_graph, additions)
+
+    parts.append("INSERT\n{\n%s\n%s\n}\n" % (
+        insert_additions, triples_clause(dataset.edit_graph, changeset)))
+
+    parts.append("WHERE\n{\n%s\n}\n" % (
+        where_clause(dataset.data_graph, removals, additions)))
+
+    return "".join(parts)
 
 
 def tmp():
@@ -289,6 +299,42 @@ test_changeset = """
       "o": {
         "@id": "https://twitter.com/britneySPEARS"
       }
+    }
+  ]
+}
+"""
+
+first_changeset = """
+{
+  "@context": {
+    "@base": "urn:uuid:9561f858-75e8-11e4-8574-fb90dd581502",
+    "cs": "http://purl.org/vocab/changeset/schema#",
+    "dc": "http://purl.org/dc/terms/",
+    "foaf": "http://xmlns.com/foaf/0.1/",
+    "rdf": "http://www.w3.org/1999/02/22-rdf-syntax-ns#",
+    "sioc": "http://rdfs.org/sioc/types#",
+    "wald": "https://waldmeta.org/ns#",
+    "xsd": "http://www.w3.org/2001/XMLSchema#",
+    "cs:addition": { "@type": "@id" },
+    "cs:removal": { "@type": "@id" },
+    "cs:subjectOfChange": { "@type": "@id" },
+    "dc:creator": { "@type": "@id" },
+    "s": { "@id": "rdf:subject", "@type": "@id" },
+    "p": { "@id": "rdf:predicate", "@type": "@id" },
+    "o": { "@id": "rdf:object" }
+  },
+  "@id": "urn:uuid:9561f858-75e8-11e4-8574-fb90dd581502",
+  "@type": "cs:ChangeSet",
+  "dc:creator": "https://example.com/user/CallerNo6",
+  "dc:date": "2014-09-16T23:56:01Z",
+  "cs:changeReason": "initial data",
+  "cs:subjectOfChange": "http://musicbrainz.org/artist/45a663b5-b1cb-4a91-bff6-2bef7bbfdd76#_",
+  "cs:addition": [
+    {
+      "@type": "rdf:Statement",
+      "s": "http://musicbrainz.org/artist/45a663b5-b1cb-4a91-bff6-2bef7bbfdd76#_",
+      "p": "foaf:name",
+      "o": "Brittaney Spears"
     }
   ]
 }

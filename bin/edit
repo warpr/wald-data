@@ -23,10 +23,11 @@ import rdflib
 from rdflib.namespace import FOAF, RDF
 from rdflib.term import BNode, Literal, URIRef
 
-import wald.storage.edit
-import wald.storage.tools
-import wald.storage.setup
 import wald.storage.dataset
+import wald.storage.edit
+import wald.storage.setup
+import wald.storage.sparql
+import wald.storage.tools
 
 if __name__ == '__main__':
     project_root = dirname(dirname(abspath(__file__)))
@@ -34,26 +35,20 @@ if __name__ == '__main__':
     setup = wald.storage.setup.load(project_root)
     graphs = wald.storage.dataset.load(setup)
 
-    print ("minting... ", graphs['music'].mint('artist'))
-    print ("minting... ", graphs['music'].mint('artist'))
-    print ("minting... ", graphs['music'].mint('artist'))
+    music = graphs['music']
 
-    print ("minting... ", graphs['music'].mint_edit())
-    print ("minting... ", graphs['music'].mint_edit())
-    print ("minting... ", graphs['music'].mint_edit())
+    # g = wald.storage.tools.parse(wald.storage.edit.first_changeset, format='json-ld')
 
+    # changeset = wald.storage.edit.normalize(music.mint_edit(), g)
+    # update = wald.storage.edit.sparql_update(music, changeset)
 
-    # import pprint
+    # wald.storage.sparql.update(music, update)
 
-    # edits = URIRef('https://kuno.link/music/edits')
-    # dataset = URIRef('https://kuno.link/music/dataset')
+    g = wald.storage.tools.parse(wald.storage.edit.test_changeset, format='json-ld')
+    changeset = wald.storage.edit.normalize(music.mint_edit(), g)
+    update = wald.storage.edit.sparql_update(music, changeset)
+    wald.storage.sparql.update(music, update)
 
-    # edit_id = URIRef('https://kuno.link/music/edits/1')
-
-    # g = wald.storage.tools.parse(wald.storage.edit.test_changeset, format='json-ld')
-
-    # changeset = wald.storage.edit.normalize(edit_id, g)
-    # update = wald.storage.edit.sparql_update(None, changeset)
 
     # print (update)
 
