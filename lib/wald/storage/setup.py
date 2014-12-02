@@ -27,12 +27,9 @@ TDB = rdflib.Namespace('http://jena.hpl.hp.com/2008/tdb#')
 JASM = rdflib.Namespace('http://jena.hpl.hp.com/2005/11/Assembler#')
 FUSEKI = rdflib.Namespace('http://jena.apache.org/fuseki#')
 
-# class InvalidDatasetName(Exception):
-#     pass
 
-
-# class EditableDataset (namedtuple("EditableDataset", "dataset edits mint setup")):
-#     pass
+class InvalidDatasetName(Exception):
+    pass
 
 
 def config_ini(project_root):
@@ -74,46 +71,6 @@ def save(setup, base_iri, dataset):
     # Reload the configuration.
     return config(setup.project_root)
 
-# def graphs(setup, create=False):
-#     all_graphs = {}
-
-#     mint = wald.storage.mint.initialize(setup)
-
-#     for dataset in setup.datasets:
-#         graphs = {}
-
-#         dataset_identifier = setup.base_iri + dataset + '/'
-
-#         for suffix in [ 'dataset', 'edits' ]:
-#             identifier = dataset_identifier + suffix + '/'
-#             print ("Initializing", identifier)
-#             store = rdflib.plugin.get("SQLAlchemy", rdflib.store.Store)(identifier=identifier)
-#             graphs[suffix] = rdflib.Graph(store, identifier=identifier)
-#             graphs[suffix].open(setup.dburi, create=create)
-
-#         all_graphs[dataset] = EditableDataset(
-#             graphs['dataset'],
-#             graphs['edits'],
-#             mint.entity(dataset_identifier),
-#             setup)
-
-#     return all_graphs
-
-
-# def initialize(project_root, base_iri, dataset):
-#     setup = config(project_root)
-#     save(setup, base_iri, dataset)
-
-#     # reload configuration
-#     setup = config(project_root)
-#     return graphs(setup, create=True)
-
-
-# def load(project_root):
-#     return graphs(config(project_root))
-
-
-# jena/jena-fuseki-1.1.1/s-update --service=http://localhost:3030/music/update --update=clear.dataset.sparql.txt
 
 def assembly(setup):
     g = rdflib.Graph()
@@ -179,15 +136,10 @@ def assembly(setup):
 def initialize(project_root, base_iri, dataset):
     setup = config(project_root)
     setup = save(setup, base_iri, dataset)
-
-    import pprint
-    pprint.pprint(setup)
-
-    print("--------------------------")
     assembly(setup)
 
+    return setup
 
 
-#     # reload configuration
-#     setup = config(project_root)
-#     return graphs(setup, create=True)
+def load(project_root):
+    return config(project_root)
