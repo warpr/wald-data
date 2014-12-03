@@ -37,48 +37,21 @@ if __name__ == '__main__':
 
     music = graphs['music']
 
-    # g = wald.storage.tools.parse(wald.storage.edit.first_changeset, format='json-ld')
+    wald.storage.sparql.clear(music, are_you_sure=True)
 
-    # changeset = wald.storage.edit.normalize(music.mint_edit(), g)
-    # update = wald.storage.edit.sparql_update(music, changeset)
+    g = wald.storage.tools.parse(wald.storage.edit.first_changeset, format='json-ld')
+    changeset = wald.storage.edit.normalize(music.mint_edit(), g)
+    update = wald.storage.edit.sparql_update(music, changeset)
 
-    # wald.storage.sparql.update(music, update)
+    wald.storage.sparql.update(music, update)
 
     g = wald.storage.tools.parse(wald.storage.edit.test_changeset, format='json-ld')
     changeset = wald.storage.edit.normalize(music.mint_edit(), g)
     update = wald.storage.edit.sparql_update(music, changeset)
     wald.storage.sparql.update(music, update)
 
+    data_query = "SELECT * WHERE { GRAPH %s { ?subject ?predicate ?object } } ORDER BY ?subject ?predicate ?object" % (
+        music.data_graph.n3())
 
-    # print (update)
-
-    # t = changeset.serialize(format='turtle')
-    # print (t)
-
-
-    # graphs = wald.storage.setup.load(project_root)
-
-    # # This is a temporary script to process edits on the command line.
-    # if len(sys.argv) < 2:
-    #     print ("Usage: bin/edit <dataset>")
-    #     sys.exit (1)
-
-    # graph = graphs[sys.argv[1]]
-    # meta = graphs['meta']
-
-    # import pprint
-    # pprint.pprint([
-    #     meta.mint.edits.sequential(),
-    #     meta.mint.user.opaque(),
-    #     meta.mint.comments.sequential()
-    # ])
-
-    # # http://vocab.org/changeset/schema.html
-
-    # # add_kuno(meta)
-    # # meta.dataset.close()
-
-    # # import pprint
-    # # for s,p,o in meta.dataset:
-    # #     pprint.pprint((s,p,o))
-
+    response = wald.storage.sparql.query(music, data_query)
+    print (response)

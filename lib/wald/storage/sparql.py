@@ -12,16 +12,29 @@ from __future__ import unicode_literals
 
 import requests
 
+def clear(dataset, are_you_sure=False):
+    if not are_you_sure:
+        return False
+
+    return update(dataset, 'CLEAR ALL')
+
 def query(dataset, query):
-    print ("send query to sparql query endpoint", dataset.sparql_query)
+    response = requests.post(dataset.sparql_query, data={ 'query': query, 'output': 'tsv' })
+    if response.status_code == 200:
+        return response.text
+
+    # FIXME: raise exception
+    print ("STATUS:", response.status_code)
+    if response.status_code != 204:
+        print ("---------------\n", response.text)
 
 def update(dataset, update):
-    print (update)
-
     response = requests.post(dataset.sparql_update, data={ 'update': update })
-    import pprint
-    pprint.pprint(response)
+    if response.status_code == 200:
+        return True
 
+    # FIXME: raise exception
+    print ("STATUS:", response.status_code)
     if response.status_code != 204:
         print ("---------------\n", response.text)
 
