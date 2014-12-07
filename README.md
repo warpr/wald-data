@@ -2,25 +2,38 @@
 wald-storage
 ============
 
-wald-storage uses neo4j as a datastore, and redis to mint identifiers.
+wald-storage is built on various third-party components:
+
+- Fuseki is used as a database
+- Redis is used to mint identifiers
+- A Linked Data Fragments server is used as a read-only webservice to the database
+
+Follow the instructions below to set things up.
 
 
 Step 1.  Install and configure all your requirements
 ----------------------------------------------------
 
-First, make sure you have java, redis and python installed.  And then run
-bin/bootstrap.  On Ubuntu you can run:
+First, make sure you have java, redis, node.js and python installed. If you're on an older
+Ubuntu you may have to use the
+[chris lea PPA](https://launchpad.net/~chris-lea/+archive/ubuntu/node.js) to install node.js.
+The other requirements can be installed with:
 
     sudo apt-get install openjdk-7-jdk redis-server
     sudo apt-get install python-virtualenv python-pip
     bin/bootstrap
 
-The bootstrap script will install various third-party python libraries in a virtualenv, and
-download Fuseki. Fuseki is the SPARQL server included in the Apache Jena project. See [the Fuseki
-documentation](https://jena.apache.org/documentation/serving_data/) for more information.
+The bootstrap script will install various third-party python libraries in a virtualenv.  It will
+also download Fuseki and the node.js [Linked Data Fragments](http://linkeddatafragments.org/software/)
+server. [Fuseki](https://jena.apache.org/documentation/serving_data/) is the SPARQL server included
+in the Apache Jena project.
 
 
 ____ FIXME: everything below this line is outdated ____
+
+
+
+
 
 
 Step 2. Creating your dataset

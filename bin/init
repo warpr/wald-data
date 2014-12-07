@@ -13,30 +13,15 @@ from __future__ import unicode_literals
 import os
 import sys
 import activate
-from os.path import abspath, dirname
+from os.path import abspath, curdir, dirname
 
 activate.uninstalled ()
 activate.virtualenv ('waldmeta')
 
 import wald.storage.setup
-import wald.storage.mint
 
 if __name__ == '__main__':
-    if len(sys.argv) < 3:
-        print ("Usage: bin/init <base url> <dataset>")
-        print ("")
-        print ("See README.md for more information.")
-        print ("")
-        sys.exit (1)
-
     project_root = dirname(dirname(abspath(__file__)))
-    base_url = sys.argv[1]
-    datasets = sys.argv[2]
-
-    graphs = wald.storage.setup.initialize(project_root, base_url, datasets)
-
-    import pprint
-    pprint.pprint(graphs)
-
-    # wald.storage.mint.initialize(graphs['meta'].setup)
+    site_root = abspath(curdir)
+    graphs = wald.storage.setup.initialize(project_root, site_root)
 

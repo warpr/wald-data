@@ -1,0 +1,23 @@
+{
+  "name": "waldmeta",
+  "version": "0.4.0",
+  "description": "wald:meta is vapourware.",
+  "repository": {
+    "type": "git",
+    "url": "git@github.com:warpr/waldmeta.git"
+  },
+  "keywords": [
+    "Linked Data"
+  ],
+  "author": "Kuno Woudt <kuno@frob.nl>",
+  "license": "copyleft-next 0.3.0",
+  "bugs": {
+    "url": "https://github.com/warpr/waldmeta/issues"
+  },
+  "homepage": "http://waldmeta.org/",
+  "dependencies": {
+    "jsonld": "^0.3.2",
+    "ldf-server": "git+https://github.com/warpr/Server.js",
+    "n3": "^0.3.1"
+  }
+}

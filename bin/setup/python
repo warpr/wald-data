@@ -45,8 +45,3 @@ link_bin "$BIN" pip
 link_bin "$BIN" nosetests
 link_bin "$BIN" ipython
 link_bin "$BIN" flake8
-
-if [ ! -e etc/config.ini ]; then
-    cp etc/config.example.ini etc/config.ini
-    chmod go-r etc/config.ini
-fi

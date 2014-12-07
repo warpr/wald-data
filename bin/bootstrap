@@ -74,5 +74,13 @@ if [ ! -d jena-fuseki ]; then
     fi
 fi
 
-# setup python virtualenv
 bin/setup/python
+npm install
+
+echo "========================================================"
+echo " Setup is complete. "
+echo ""
+echo " See the README.md for more information. "
+echo "========================================================"
+
+
