@@ -185,7 +185,7 @@ def fuseki_config(site_root, graph):
         fuseki_graph.add((service, FUSEKI.dataset, rdf_dataset))
 
         fuseki_graph.add((rdf_dataset, a, TDB.DatasetTDB))
-        fuseki_graph.add((rdf_dataset, TDB.location, Literal('../store/' + dataset + ".tdb")))
+        fuseki_graph.add((rdf_dataset, TDB.location, Literal(join (site_root, 'store', dataset + ".tdb"))))
 
         edits_graph = CONFIG[dataset + 'EditsGraph']
         fuseki_graph.add((edits_graph, a, TDB.GraphTDB))
@@ -303,7 +303,82 @@ def ldf_config(site_root, graph):
     print ("Linked Data Fragments server configuration saved to %s" % (target))
 
 
+def fuseki_start(project_root, site_root):
+    lines = [
+        '#!/bin/sh',
+        '',
+        'FUSEKI_PATH='  + join(project_root, 'jena-fuseki'),
+        'SITE_PATH=' + site_root,
+        '',
+        'cd "$FUSEKI_PATH"',
+        './fuseki-server --update "--conf=$SITE_PATH/etc/fuseki.ttl"',
+        ''
+    ]
+
+    script = join(site_root, 'bin', 'fuseki')
+    with open(script, "wb") as f:
+        f.write("\n".join(lines))
+    st = os.stat(script)
+    os.chmod(script, st.st_mode | 0110)
+
+
+def ldf_start(project_root, site_root):
+    lines = [
+        '#!/bin/sh',
+        '',
+        'WALD_PATH='  + project_root,
+        'SITE_PATH=' + site_root,
+        '',
+        '"$WALD_PATH/node_modules/.bin/ldf-server" "$SITE_PATH/etc/ldf-server.json" 5000 4',
+        ''
+    ]
+
+    script = join(site_root, 'bin', 'ldf')
+    with open(script, "wb") as f:
+        f.write("\n".join(lines))
+    st = os.stat(script)
+    os.chmod(script, st.st_mode | 0110)
+
+
+def gnu_screen(site_root):
+
+    start = """#!/bin/sh
+
+SITE_PATH=%s
+
+screen -U -e^Zz -c "$SITE_PATH/etc/screenrc"
+""" % (site_root)
+
+    screenrc = """
+setenv LC_CTYPE en_US.UTF-8
+defutf8 on
+hardstatus alwayslastline
+
+screen -t fuseki 0 %s
+screen -t ldf 1 %s
+
+select 0
+""" % (join (site_root, 'bin', 'fuseki'), join (site_root, 'bin', 'ldf'))
+
+    start_script_filename = join (site_root, 'bin', 'start')
+    if not os.path.isfile(start_script_filename):
+        with open(start_script_filename, "wb") as f:
+            f.write(start)
+        st = os.stat(start_script_filename)
+        os.chmod(start_script_filename, st.st_mode | 0110)
+
+    screenrc_filename = join (site_root, 'etc', 'screenrc')
+    if not os.path.isfile(screenrc_filename):
+        with open(screenrc_filename, "wb") as f:
+            f.write(screenrc)
+
+
 def initialize(project_root, site_root):
+    try:
+        os.makedirs(join(site_root, 'bin'))
+    except OSError as e:
+        pass # already exists, that's fine.
+
     try:
         os.makedirs(join(site_root, 'etc'))
     except OSError as e:
@@ -312,7 +387,10 @@ def initialize(project_root, site_root):
     graph = load_site_config(project_root, site_root)
     process_config(graph)
     fuseki_config(site_root, graph)
+    fuseki_start(project_root, site_root)
     ldf_config(site_root, graph)
+    ldf_start(project_root, site_root)
+    gnu_screen(site_root)
 
     target = join('etc', 'waldmeta.ttl')
     filename = join(site_root, target)
