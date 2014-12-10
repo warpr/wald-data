@@ -13,13 +13,17 @@ from __future__ import unicode_literals
 import os
 import sys
 import activate
-from os.path import abspath, dirname
+from os.path import abspath, curdir, dirname
 
 activate.uninstalled ()
 activate.virtualenv ('waldmeta')
 
 import wald.storage.setup
+import wald.storage.service
 
 if __name__ == '__main__':
     project_root = dirname(dirname(abspath(__file__)))
-    graphs = wald.storage.setup.load(project_root)
+    site_root = abspath(curdir)
+    setup_graph = wald.storage.setup.load(project_root, site_root)
+
+    print(setup_graph.serialize(format='turtle'))

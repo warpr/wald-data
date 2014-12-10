@@ -403,5 +403,6 @@ def initialize(project_root, site_root):
     return graph
 
 
-def load(project_root):
-    return config(project_root)
+def load(project_root, site_root):
+    filename = join(site_root, 'etc', 'waldmeta.ttl')
+    return wald.storage.tools.parse_file(project_root, filename)

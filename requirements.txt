@@ -7,3 +7,4 @@ rdflib            >= 4.1,   <= 4.2
 rdflib-jsonld     >= 0.2,   <= 1.0
 redis             >= 2.10,  <= 2.11
 requests          >= 2.5,   <= 2.6
+werkzeug          >= 0.9.6, <= 0.10

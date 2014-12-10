@@ -10,18 +10,5 @@ from __future__ import absolute_import
 from __future__ import print_function
 from __future__ import unicode_literals
 
-import os
-import sys
-import activate
-from os.path import abspath, curdir, dirname
-
-activate.uninstalled ()
-activate.virtualenv ('waldmeta')
-
-import wald.storage.setup
-
-if __name__ == '__main__':
-    project_root = dirname(dirname(abspath(__file__)))
-    site_root = abspath(curdir)
-    wald.storage.setup.initialize(project_root, site_root)
+import werkzeug
 
