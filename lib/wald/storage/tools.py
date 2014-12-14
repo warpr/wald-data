@@ -20,6 +20,66 @@ from os.path import join
 
 has_suffix = re.compile('\\.[a-z0-9]{2,32}$')
 
+formats = {
+    'application/json': 'json-ld',
+    'application/ld+json': 'json-ld',
+    'application/rdf+xml': 'rdfxml',
+    'application/x-turtle': 'turtle',
+    'application/xml': 'rdfxml',
+    'json': 'json-ld',
+    'json-ld': 'json-ld',
+    'jsonld': 'json-ld',
+    'nt': 'nt',
+    'ntriples': 'nt',
+    'rdf': 'rdfxml',
+    'rdfxml': 'rdfxml',
+    'text/turtle': 'turtle',
+    'ttl': 'turtle',
+    'turtle': 'turtle',
+    'xml': 'rdfxml',
+}
+
+class LinkedData(object):
+    def __init__(self, project_root, site_root=None):
+        with open(join (project_root, 'etc', 'context.json'), "rb") as f:
+            self.context = json.loads (f.read())
+
+    def graph(self, triples=None):
+        # FIXME: update this to also load website specific prefixes from site_root
+
+        if not triples:
+            triples=[]
+
+        g = rdflib.Graph()
+        for prefix, iri in self.context["@context"].items():
+            g.namespace_manager.bind(prefix, iri)
+
+        [ g.add(t) for t in triples ]
+
+        return g
+
+    def parse_file(self, filename):
+        with open (filename, "rb") as f:
+            data = f.read ()
+
+        basename, suffix = os.path.splitext(filename)
+        if suffix:
+            suffix = suffix[1:]
+
+        return self.parse(data, formats.get(suffix, 'nt'))
+
+
+    def parse(self, str, content_type=None):
+        """ Parse an RDF document.
+
+        Supports any RDFLib supported formats, see
+        https://rdflib.readthedocs.org/en/latest/plugin_parsers.html .
+
+        """
+
+        return self.graph().parse(data=str, format=formats.get(content_type, 'nt'))
+
+
 def iri_join (*args):
     parts = list (args)
     if len(parts) < 2:
@@ -57,54 +117,12 @@ def replace_bnode(graph, old, new):
     return graph
 
 
-def graph(project_root):
-    """ Prepare an rdflib.Graph with prefixes loaded. """
-
-    # FIXME: update this to also load website specific prefixes from site_root
-
-    with open(join (project_root, 'etc', 'context.json'), "rb") as f:
-        context = json.loads (f.read())
-
-    g = rdflib.Graph()
-    for prefix, iri in context["@context"].items():
-        g.namespace_manager.bind(prefix, iri)
-
-    return g
-
-
-def parse_file (project_root, filename):
-    with open (filename, "rb") as f:
-        data = f.read ()
-
-    format = None
-    if filename.endswith('.nt') or filename.endswith('.ntriples'):
-        format = 'nt'
-    elif filename.endswith('.json') or filename.endswith('.jsonld'):
-        format = 'json-ld'
-    elif filename.endswith('.ttl') or filename.endswith('.turtle'):
-        format = 'turtle'
-    elif filename.endswith('.rdf') or filename.endswith('.xml'):
-        # FIXME: untested
-        format = 'rdfxml'
-
-    return parse(project_root, data, format)
-
-
-def parse(project_root, str, format='nt'):
-    """ Parse an RDF document.
-
-    Supports any RDFLib supported formats, see
-    https://rdflib.readthedocs.org/en/latest/plugin_parsers.html .
-
-    """
-
-    g = graph(project_root)
-    return g.parse(data=str, format=format)
-
-
 def trimlines (str):
     return "\n".join ([ l.rstrip () for l in str.split ("\n") ])
+
 
 def save_json (target, data):
     with codecs.open(target, "wb", "UTF-8") as f:
         f.write(trimlines (json.dumps (data, indent=4, ensure_ascii=False)) + "\n")
+
+

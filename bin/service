@@ -26,4 +26,10 @@ if __name__ == '__main__':
     site_root = abspath(curdir)
     setup_graph = wald.storage.setup.load(project_root, site_root)
 
-    print(setup_graph.serialize(format='turtle'))
+    # print(setup_graph.serialize(format='turtle'))
+
+    application = wald.storage.service.make_application(setup_graph)
+
+    from werkzeug.serving import run_simple
+    # http://werkzeug.pocoo.org/docs/0.9/serving/
+    run_simple('localhost', 4000, application, use_reloader=True)

@@ -12,29 +12,36 @@ from __future__ import unicode_literals
 
 import requests
 
-def clear(dataset, are_you_sure=False):
-    if not are_you_sure:
-        return False
+import wald.storage.tools
 
-    return update(dataset, 'CLEAR ALL')
+class Sparql(object):
 
-def query(dataset, query):
-    response = requests.post(dataset.sparql_query, data={ 'query': query, 'output': 'tsv' })
-    if response.status_code == 200:
-        return response.text
+    def __init__ (self, sparql_base, identifier):
+        self.query_iri = wald.storage.tools.iri_join(sparql_base, identifier, 'query')
+        self.update_iri = wald.storage.tools.iri_join(sparql_base, identifier, 'update')
 
-    # FIXME: raise exception
-    print ("STATUS:", response.status_code)
-    if response.status_code != 204:
-        print ("---------------\n", response.text)
+    def clear(self, are_you_sure=False):
+        if not are_you_sure:
+            return False
 
-def update(dataset, update):
-    response = requests.post(dataset.sparql_update, data={ 'update': update })
-    if response.status_code == 200:
-        return True
+        return self.update('CLEAR ALL')
 
-    # FIXME: raise exception
-    print ("STATUS:", response.status_code)
-    if response.status_code != 204:
-        print ("---------------\n", response.text)
+    def query(self, query):
+        response = requests.post(self.query_iri, data={ 'query': query, 'output': 'tsv' })
+        if response.status_code == 200:
+            return response.text
 
+        # FIXME: raise exception
+        print ("STATUS:", response.status_code)
+        if response.status_code != 204:
+            print ("---------------\n", response.text)
+
+    def update(self, update):
+        response = requests.post(self.update_iri, data={ 'update': update })
+        if response.status_code == 200:
+            return True
+
+        # FIXME: raise exception
+        print ("STATUS:", response.status_code)
+        if response.status_code != 204:
+            print ("---------------\n", response.text)

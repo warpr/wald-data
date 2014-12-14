@@ -10,63 +10,57 @@ from __future__ import absolute_import
 from __future__ import print_function
 from __future__ import unicode_literals
 
-from collections import OrderedDict
-
 import rdflib
+import wald.storage.mint
+
+from collections import OrderedDict
 from rdflib.namespace import FOAF, RDF, RDFS
 from rdflib.term import BNode, Literal, URIRef
-
-CS = rdflib.Namespace('http://purl.org/vocab/changeset/schema#')
-
-def apply(dataset, triples):
-    """ wald.storage.edit.appy will apply the specified changeset to the specified graph.
-
-    The dataset argument should be an EditableDataset as provided by wald.storage.setup.
-    The triples argument should be a list of (subject, predicate, object) tuples which
-    describe a changeset using http://vocab.org/changeset/schema.html .
-    """
-
-    # This needs some kind of complicated double transaction which:
-
-    # 1. Validate if the changeset can be applied:
-    #     1.1 Verify that triples which are removed by the changeset exist
-    #     1.2 Verify that triples added by the changeset do not exist yet
-    # 2. Give the changeset an identifier
-    # 3. Record the changeset in the edits graph
-    # 4. Apply the changeset to the dataset graph
-    # 5. Record (in the edits graph) that the changeset has been applied or failed to apply
-
-    # Perhaps move to neo4j.  As far as I can tell none of the RDFLib stores do ACID.
+from wald.storage.namespaces import *
 
 
-    # if not valid(triples):
-    #     raise some exception
-    # triples = normalize(dataset.mint.edit.sequential(), triples)
+class Edit (object):
 
-    triple = (
-        URIRef("http://musicbrainz.org/artist/45a663b5-b1cb-4a91-bff6-2bef7bbfdd76#_"),
-        FOAF.name,
-        Literal("Brittaney Spears")
-    )
+    def __init__(self, setup_graph, dataset, linkeddata, sparql):
+        self.setup_graph = setup_graph
+        self.dataset = dataset
+        self.sparql = sparql
+        self.ld = linkeddata
+        self.minter = wald.storage.mint.Mint(setup_graph)
 
-
-    # DELETE { GRAPH <g1> { a b c } } INSERT { GRAPH <g1> { x y z } } USING <g1> WHERE { ... }
-
-# INSERT
-#   { GRAPH <http://example/addresses>
-#     {
-#       ?person  foaf:name  ?name .
-#       ?person  foaf:mbox  ?email
-#     } }
-# WHERE
-#   { GRAPH  <http://example/people>
-#     {
-#       ?person  foaf:name  ?name .
-#       OPTIONAL { ?person  foaf:mbox  ?email }
-#     } }
+        self.data_graph = setup_graph.value(dataset, WALD.dataGraph)
+        self.edit_graph = setup_graph.value(dataset, WALD.editGraph)
 
 
-def validate(graph, triples):
+    def apply(self, changeset):
+        """ wald.storage.edit.appy will apply the specified changeset at the
+        specified sparql endpoint.
+
+        The sparql argument should be an initialized Sparql object as provided
+        by wald.storage.sparql. The changeset argument should be a parsed graph of a changeset described using http://vocab.org/changeset/schema.html .
+        """
+
+        # This needs some kind of complicated double transaction which:
+
+        # 1. Validate if the changeset can be applied:
+        #     1.1 Verify that triples which are removed by the changeset exist
+        #     1.2 Verify that triples added by the changeset do not exist yet
+        # 2. Give the changeset an identifier
+        # 3. Record the changeset in the edit graph
+        # 4. Apply the changeset to the data graph
+        # 5. Record (in the edit graph) that the changeset has been applied or failed to apply
+
+        # validate will raise an exception if the changeset is not valid
+        validate(self.sparql, changeset)
+
+        edit_graph = self.setup_graph.value(self.dataset, WALD.editGraph)
+        edit_id = self.minter.sequential(edit_graph + '/')
+
+        return sparql_update(self.data_graph, self.edit_graph,
+                             self.ld.graph(normalize(edit_id, changeset)))
+
+
+def validate(sparql, changeset):
     """ Validate the changeset.
 
     This verifies that no changes would be ignored if the changeset is applied to the
@@ -78,10 +72,11 @@ def validate(graph, triples):
     For additions this function will validate that those triples do not exist yet, and for
     removals this function will validate that those triples still exist in the database.
 
-
+    Raises an exception if the changeset is not valid.
 
     """
 
+    return True
 
 
 def normalize(edit_id, triples):
@@ -91,9 +86,11 @@ def normalize(edit_id, triples):
     relative to the edit.  If there are any blank nodes which are not additions or
     removals they get a #genN identifier.
 
+    FIXME: at some point I need to do unicode normalization as well.
+
     """
 
-    changeset = rdflib.Graph()
+    changeset = []
 
     seen_changeset = False
     replacements = {}
@@ -128,7 +125,7 @@ def normalize(edit_id, triples):
         if o in replacements:
             triple[2] = replacements[o]
 
-        changeset.add(triple)
+        changeset.append(triple)
 
     return changeset
 
@@ -140,8 +137,10 @@ def unreify(graph, iri):
             next(graph[iri:RDF.predicate:]),
             next(graph[iri:RDF.object:]))
 
+
 def triple_to_n3(triple):
     return "        " + " ".join([ term.n3() for term in triple ])
+
 
 def triples_clause(graph_iri, triples):
 
@@ -173,7 +172,7 @@ def where_clause (graph_iri, removals, additions):
     return ("    GRAPH %s\n    {\n%s\n%s\n    }" % (graph_iri.n3(), exists, not_exists))
 
 
-def sparql_update(dataset, changeset):
+def sparql_update(data_graph, edit_graph, changeset):
 
     removal_ids = []
     for s,o in changeset[:CS.removal:]:
@@ -191,17 +190,17 @@ def sparql_update(dataset, changeset):
 
     parts = []
     if removals:
-        parts.append("DELETE\n{\n%s\n}\n" % (triples_clause(dataset.data_graph, removals)))
+        parts.append("DELETE\n{\n%s\n}\n" % (triples_clause(data_graph, removals)))
 
     insert_additions = ''
     if additions:
-        insert_additions = triples_clause(dataset.data_graph, additions)
+        insert_additions = triples_clause(data_graph, additions)
 
     parts.append("INSERT\n{\n%s\n%s\n}\n" % (
-        insert_additions, triples_clause(dataset.edit_graph, changeset)))
+        insert_additions, triples_clause(edit_graph, changeset)))
 
     parts.append("WHERE\n{\n%s\n}\n" % (
-        where_clause(dataset.data_graph, removals, additions)))
+        where_clause(data_graph, removals, additions)))
 
     return "".join(parts)
 
@@ -232,110 +231,5 @@ INSERT DATA
 {
     GRAPH <http://example/bookStore>
     { <http://example/book1>  <http://purl.org/dc/elements/1.1/title>  "Fundamentals of Compiler Design" }
-}
-"""
-
-
-test_changeset = """
-{
-  "@context": {
-    "@base": "urn:uuid:9561f858-75e8-11e4-8574-fb90dd581502",
-    "cs": "http://purl.org/vocab/changeset/schema#",
-    "dc": "http://purl.org/dc/terms/",
-    "foaf": "http://xmlns.com/foaf/0.1/",
-    "rdf": "http://www.w3.org/1999/02/22-rdf-syntax-ns#",
-    "sioc": "http://rdfs.org/sioc/types#",
-    "wald": "https://waldmeta.org/ns#",
-    "xsd": "http://www.w3.org/2001/XMLSchema#",
-    "cs:addition": {
-      "@type": "@id"
-    },
-    "cs:removal": {
-      "@type": "@id"
-    },
-    "cs:subjectOfChange": {
-      "@type": "@id"
-    },
-    "dc:creator": {
-      "@type": "@id"
-    },
-    "s": {
-      "@id": "rdf:subject",
-      "@type": "@id"
-    },
-    "p": {
-      "@id": "rdf:predicate",
-      "@type": "@id"
-    },
-    "o": {
-      "@id": "rdf:object"
-    }
-  },
-  "@id": "urn:uuid:9561f858-75e8-11e4-8574-fb90dd581502",
-  "@type": "cs:ChangeSet",
-  "dc:creator": "https://example.com/user/CallerNo6",
-  "dc:date": "2014-09-16T23:59:01Z",
-  "cs:changeReason": "fix typo",
-  "cs:subjectOfChange": "http://musicbrainz.org/artist/45a663b5-b1cb-4a91-bff6-2bef7bbfdd76#_",
-  "cs:removal": [
-    {
-      "@type": "rdf:Statement",
-      "s": "http://musicbrainz.org/artist/45a663b5-b1cb-4a91-bff6-2bef7bbfdd76#_",
-      "p": "foaf:name",
-      "o": "Brittaney Spears"
-    }
-  ],
-  "cs:addition": [
-    {
-      "@type": "rdf:Statement",
-      "s": "http://musicbrainz.org/artist/45a663b5-b1cb-4a91-bff6-2bef7bbfdd76#_",
-      "p": "foaf:name",
-      "o": "Britney Spears"
-    },
-    {
-      "@type": "rdf:Statement",
-      "s": "http://musicbrainz.org/artist/45a663b5-b1cb-4a91-bff6-2bef7bbfdd76#_",
-      "p": "sioc:Microblog",
-      "o": {
-        "@id": "https://twitter.com/britneySPEARS"
-      }
-    }
-  ]
-}
-"""
-
-first_changeset = """
-{
-  "@context": {
-    "@base": "urn:uuid:9561f858-75e8-11e4-8574-fb90dd581502",
-    "cs": "http://purl.org/vocab/changeset/schema#",
-    "dc": "http://purl.org/dc/terms/",
-    "foaf": "http://xmlns.com/foaf/0.1/",
-    "rdf": "http://www.w3.org/1999/02/22-rdf-syntax-ns#",
-    "sioc": "http://rdfs.org/sioc/types#",
-    "wald": "https://waldmeta.org/ns#",
-    "xsd": "http://www.w3.org/2001/XMLSchema#",
-    "cs:addition": { "@type": "@id" },
-    "cs:removal": { "@type": "@id" },
-    "cs:subjectOfChange": { "@type": "@id" },
-    "dc:creator": { "@type": "@id" },
-    "s": { "@id": "rdf:subject", "@type": "@id" },
-    "p": { "@id": "rdf:predicate", "@type": "@id" },
-    "o": { "@id": "rdf:object" }
-  },
-  "@id": "urn:uuid:9561f858-75e8-11e4-8574-fb90dd581502",
-  "@type": "cs:ChangeSet",
-  "dc:creator": "https://example.com/user/CallerNo6",
-  "dc:date": "2014-09-16T23:56:01Z",
-  "cs:changeReason": "initial data",
-  "cs:subjectOfChange": "http://musicbrainz.org/artist/45a663b5-b1cb-4a91-bff6-2bef7bbfdd76#_",
-  "cs:addition": [
-    {
-      "@type": "rdf:Statement",
-      "s": "http://musicbrainz.org/artist/45a663b5-b1cb-4a91-bff6-2bef7bbfdd76#_",
-      "p": "foaf:name",
-      "o": "Brittaney Spears"
-    }
-  ]
 }
 """

@@ -20,8 +20,8 @@ class Dataset(object):
 
     def __init__(self, name, setup):
         self._setup = setup
-        self.edit_graph = URIRef(setup.base_iri + name + '/edits')
-        self.data_graph = URIRef(setup.base_iri + name + '/dataset')
+        self.edit_graph = URIRef(setup.base_iri + name + '/edit')
+        self.data_graph = URIRef(setup.base_iri + name + '/data')
         self.sparql_query = setup.sparql + name + '/query'
         self.sparql_update = setup.sparql + name + '/update'
         self.minter = wald.storage.mint.load(setup)

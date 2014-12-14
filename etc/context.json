@@ -2,9 +2,10 @@
     "@context": {
         "atom": "http://www.w3.org/2005/Atom/",
         "cc": "http://creativecommons.org/ns#",
+        "cs": "http://purl.org/vocab/changeset/schema#",
         "dbpedia": "http://dbpedia.org/resource/",
-        "dc": "http://purl.org/dc/elements/1.1/",
-        "dcterms": "http://purl.org/dc/terms/",
+        "dc": "http://purl.org/dc/terms/",
+        "dc11": "http://purl.org/dc/elements/1.1/",
         "dctype": "http://purl.org/dc/dcmitype/",
         "doap": "http://usefulinc.com/ns/doap#",
         "foaf": "http://xmlns.com/foaf/0.1/",
@@ -28,7 +29,7 @@
         "vs": "http://www.w3.org/2003/06/sw-vocab-status/ns#",
         "wald": "http://waldmeta.org/ontology/#",
         "wikidata": "http://www.wikidata.org/entity/",
-        "xml": "http://www.w3.org/XML/1998/namespace/",
+        "xml": "http://www.w3.org/XML/1998/namespace",
         "xsd": "http://www.w3.org/2001/XMLSchema#"
     }
 }

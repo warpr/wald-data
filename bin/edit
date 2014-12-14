@@ -39,13 +39,15 @@ if __name__ == '__main__':
 
     wald.storage.sparql.clear(music, are_you_sure=True)
 
-    g = wald.storage.tools.parse(wald.storage.edit.first_changeset, format='json-ld')
+    ld = wald.storage.tools.LinkedData(project_root)
+
+    g = ld.parse(wald.storage.edit.first_changeset, format='json-ld')
     changeset = wald.storage.edit.normalize(music.mint_edit(), g)
     update = wald.storage.edit.sparql_update(music, changeset)
 
     wald.storage.sparql.update(music, update)
 
-    g = wald.storage.tools.parse(wald.storage.edit.test_changeset, format='json-ld')
+    g = ld.parse(wald.storage.edit.test_changeset, format='json-ld')
     changeset = wald.storage.edit.normalize(music.mint_edit(), g)
     update = wald.storage.edit.sparql_update(music, changeset)
     wald.storage.sparql.update(music, update)

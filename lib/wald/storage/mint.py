@@ -14,15 +14,16 @@ import rdflib
 import rdflib.term
 import re
 import redis
-
-from collections import OrderedDict, namedtuple
 import wald.storage.zbase32
 
+from collections import OrderedDict, namedtuple
+from wald.storage.namespaces import *
 
 class Mint(object):
 
-    def __init__(self, setup):
-        host, port = setup.redis.split(':')
+    def __init__(self, setup_graph):
+        site_config = setup_graph.value(None, a, WALD.SiteConfig)
+        host, port = setup_graph.value(site_config, WALD.redis).split(':')
         self._Redis = redis.Redis(host=host, port=port)
 
     def increment(self, prefix):
@@ -45,7 +46,3 @@ class Mint(object):
 
         iri = prefix + wald.storage.zbase32.b2a(0x3ff + self.increment(prefix))
         return rdflib.term.URIRef (iri)
-
-
-def load(setup):
-    return Mint(setup)

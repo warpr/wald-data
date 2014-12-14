@@ -28,16 +28,7 @@ from os.path import join
 from rdflib.namespace import RDF, RDFS, XSD
 from rdflib.term import BNode, Literal, URIRef
 from wald.storage.tools import iri_join
-
-CC = rdflib.Namespace('http://creativecommons.org/ns#')
-DC = rdflib.Namespace('http://purl.org/dc/elements/1.1/')
-LI = rdflib.Namespace('https://licensedb.org/ns#')
-FUSEKI = rdflib.Namespace('http://jena.apache.org/fuseki#')
-JASM = rdflib.Namespace('http://jena.hpl.hp.com/2005/11/Assembler#')
-TDB = rdflib.Namespace('http://jena.hpl.hp.com/2008/tdb#')
-WALD = rdflib.Namespace('http://waldmeta.org/ontology/#')
-
-a = RDF.type
+from wald.storage.namespaces import *
 
 class InvalidDatasetName(Exception):
     pass
@@ -49,16 +40,18 @@ class SiteTitleNotFound(Exception):
 def load_site_config(project_root, site_root):
     errors = []
 
+    ld = wald.storage.tools.LinkedData(project_root, site_root)
+
     # FIXME: I should have a general RDF file loader which itself tries to
     # find .ttl, .json, etc.. variants when loading an RDF file.
 
     try:
-        return wald.storage.tools.parse_file(project_root, join(site_root, 'waldmeta.json'))
+        return ld.parse_file(join(site_root, 'waldmeta.json'))
     except Exception as e:
         errors.append(unicode(e))
 
     try:
-        return wald.storage.tools.parse_file(project_root, join(site_root, 'waldmeta.ttl'))
+        return ld.parse_file(join(site_root, 'waldmeta.ttl'))
     except Exception as e:
         errors.append(unicode(e))
 
@@ -140,8 +133,8 @@ def process_config(graph):
         print ("")
 
         graph.add((dataset, a, WALD.Dataset))
-        graph.add((dataset, WALD.editGraph, dataset + 'edits'))
-        graph.add((dataset, WALD.dataGraph, dataset + 'dataset'))
+        graph.add((dataset, WALD.editGraph, dataset + 'edit'))
+        graph.add((dataset, WALD.dataGraph, dataset + 'data'))
         load_license_details(graph, dataset)
 
 
@@ -187,15 +180,15 @@ def fuseki_config(site_root, graph):
         fuseki_graph.add((rdf_dataset, a, TDB.DatasetTDB))
         fuseki_graph.add((rdf_dataset, TDB.location, Literal(join (site_root, 'store', dataset + ".tdb"))))
 
-        edits_graph = CONFIG[dataset + 'EditsGraph']
-        fuseki_graph.add((edits_graph, a, TDB.GraphTDB))
-        fuseki_graph.add((edits_graph, TDB.dataset, rdf_dataset))
-        fuseki_graph.add((edits_graph, TDB.graphName, URIRef(base_iri + dataset + '/edits')))
+        edit_graph = CONFIG[dataset + 'EditGraph']
+        fuseki_graph.add((edit_graph, a, TDB.GraphTDB))
+        fuseki_graph.add((edit_graph, TDB.dataset, rdf_dataset))
+        fuseki_graph.add((edit_graph, TDB.graphName, URIRef(base_iri + dataset + '/edit')))
 
         data_graph = CONFIG[dataset + 'DataGraph']
         fuseki_graph.add((data_graph, a, TDB.GraphTDB))
         fuseki_graph.add((data_graph, TDB.dataset, rdf_dataset))
-        fuseki_graph.add((data_graph, TDB.graphName, URIRef(base_iri + dataset + '/dataset')))
+        fuseki_graph.add((data_graph, TDB.graphName, URIRef(base_iri + dataset + '/data')))
 
     servicesName = BNode()
     servicesList = rdflib.collection.Collection(fuseki_graph, servicesName, services)
@@ -278,7 +271,7 @@ def ldf_config(site_root, graph):
             dataset['type'] = 'FusekiDatasource'
             dataset['settings'] = {
                 'endpoint': iri_join(fuseki_base, dataset_name, 'query'),
-                'defaultGraph': iri_join(base_iri, dataset_name, 'dataset')
+                'defaultGraph': iri_join(base_iri, dataset_name, 'data')
             }
 
             edit_dataset = OrderedDict()
@@ -288,12 +281,12 @@ def ldf_config(site_root, graph):
                 edit_dataset[key] = dataset[key]
             edit_dataset['settings'] = {
                 'endpoint': dataset['settings']['endpoint'],
-                'defaultGraph': iri_join(base_iri, dataset_name, 'edits')
+                'defaultGraph': iri_join(base_iri, dataset_name, 'edit')
             }
 
         output["datasources"][dataset_name] = dataset
         if edit_dataset:
-            output["datasources"][dataset_name + '/edits'] = edit_dataset
+            output["datasources"][dataset_name + '/edit'] = edit_dataset
 
 
     target = join('etc', 'ldf-server.json')
@@ -340,6 +333,25 @@ def ldf_start(project_root, site_root):
     os.chmod(script, st.st_mode | 0110)
 
 
+def waldmeta_start(project_root, site_root):
+    lines = [
+        '#!/bin/sh',
+        '',
+        'WALD_PATH='  + project_root,
+        'SITE_PATH=' + site_root,
+        '',
+        'cd "$SITE_PATH"',
+        '"$WALD_PATH/bin/service"',
+        ''
+    ]
+
+    script = join(site_root, 'bin', 'waldmeta')
+    with open(script, "wb") as f:
+        f.write("\n".join(lines))
+    st = os.stat(script)
+    os.chmod(script, st.st_mode | 0110)
+
+
 def gnu_screen(site_root):
 
     start = """#!/bin/sh
@@ -354,11 +366,14 @@ setenv LC_CTYPE en_US.UTF-8
 defutf8 on
 hardstatus alwayslastline
 
-screen -t fuseki 0 %s
+screen -t waldmeta 0 %s
 screen -t ldf 1 %s
+screen -t fuseki 2 %s
 
 select 0
-""" % (join (site_root, 'bin', 'fuseki'), join (site_root, 'bin', 'ldf'))
+""" % (join (site_root, 'bin', 'waldmeta'),
+       join (site_root, 'bin', 'ldf'),
+       join (site_root, 'bin', 'fuseki'))
 
     start_script_filename = join (site_root, 'bin', 'start')
     if not os.path.isfile(start_script_filename):
@@ -390,6 +405,7 @@ def initialize(project_root, site_root):
     fuseki_start(project_root, site_root)
     ldf_config(site_root, graph)
     ldf_start(project_root, site_root)
+    waldmeta_start(project_root, site_root)
     gnu_screen(site_root)
 
     target = join('etc', 'waldmeta.ttl')
@@ -400,9 +416,16 @@ def initialize(project_root, site_root):
     print ("wald:meta configuration saved to %s" % (target))
     print ("")
 
-    return graph
+    return load(project_root, site_root)
 
 
 def load(project_root, site_root):
+    ld = wald.storage.tools.LinkedData(project_root, site_root)
     filename = join(site_root, 'etc', 'waldmeta.ttl')
-    return wald.storage.tools.parse_file(project_root, filename)
+    setup_graph = ld.parse_file(filename)
+
+    site_config = setup_graph.value(None, a, WALD.SiteConfig)
+    setup_graph.add((site_config, WALD.projectRoot, Literal(project_root, datatype=XSD.string)))
+    setup_graph.add((site_config, WALD.siteRoot, Literal(site_root, datatype=XSD.string)))
+
+    return setup_graph
