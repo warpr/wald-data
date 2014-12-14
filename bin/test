@@ -1,0 +1,9 @@
+#!/bin/sh
+
+# flake8 has certain errors ignored, but I haven't investigated how to add pep8
+# checks to it yet.  So we separetely run bin/frobstyle, which runs pep8 with
+# custom checks for wald:meta.
+
+bin/flake8 lib/wald && bin/frobstyle lib/wald && bin/nosetests tests/*.py
+
+

@@ -15,13 +15,11 @@ from rdflib.namespace import RDF
 
 a = RDF.type
 
-CC = rdflib.Namespace('http://creativecommons.org/ns#')
-CS = rdflib.Namespace('http://purl.org/vocab/changeset/schema#')
-DC = rdflib.Namespace('http://purl.org/dc/terms/')
-FUSEKI = rdflib.Namespace('http://jena.apache.org/fuseki#')
-JASM = rdflib.Namespace('http://jena.hpl.hp.com/2005/11/Assembler#')
-LI = rdflib.Namespace('https://licensedb.org/ns#')
-TDB = rdflib.Namespace('http://jena.hpl.hp.com/2008/tdb#')
-WALD = rdflib.Namespace('http://waldmeta.org/ontology/#')
-
-
+CC = rdflib.Namespace ('http://creativecommons.org/ns#')
+CS = rdflib.Namespace ('http://purl.org/vocab/changeset/schema#')
+DC = rdflib.Namespace ('http://purl.org/dc/terms/')
+FUSEKI = rdflib.Namespace ('http://jena.apache.org/fuseki#')
+JASM = rdflib.Namespace ('http://jena.hpl.hp.com/2005/11/Assembler#')
+LI = rdflib.Namespace ('https://licensedb.org/ns#')
+TDB = rdflib.Namespace ('http://jena.hpl.hp.com/2008/tdb#')
+WALD = rdflib.Namespace ('http://waldmeta.org/ontology/#')

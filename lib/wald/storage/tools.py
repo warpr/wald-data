@@ -18,7 +18,7 @@ import rdflib
 
 from os.path import join
 
-has_suffix = re.compile('\\.[a-z0-9]{2,32}$')
+has_suffix = re.compile ('\\.[a-z0-9]{2,32}$')
 
 formats = {
     'application/json': 'json-ld',
@@ -39,37 +39,37 @@ formats = {
     'xml': 'rdfxml',
 }
 
-class LinkedData(object):
-    def __init__(self, project_root, site_root=None):
-        with open(join (project_root, 'etc', 'context.json'), "rb") as f:
-            self.context = json.loads (f.read())
 
-    def graph(self, triples=None):
+class LinkedData (object):
+    def __init__ (self, project_root, site_root=None):
+        with open (join (project_root, 'etc', 'context.json'), "rb") as f:
+            self.context = json.loads (f.read ())
+
+    def graph (self, triples=None):
         # FIXME: update this to also load website specific prefixes from site_root
 
         if not triples:
-            triples=[]
+            triples = []
 
-        g = rdflib.Graph()
-        for prefix, iri in self.context["@context"].items():
-            g.namespace_manager.bind(prefix, iri)
+        g = rdflib.Graph ()
+        for prefix, iri in self.context["@context"].items ():
+            g.namespace_manager.bind (prefix, iri)
 
-        [ g.add(t) for t in triples ]
+        [ g.add (t) for t in triples ]
 
         return g
 
-    def parse_file(self, filename):
+    def parse_file (self, filename):
         with open (filename, "rb") as f:
             data = f.read ()
 
-        basename, suffix = os.path.splitext(filename)
+        basename, suffix = os.path.splitext (filename)
         if suffix:
             suffix = suffix[1:]
 
-        return self.parse(data, formats.get(suffix, 'nt'))
+        return self.parse (data, formats.get (suffix, 'nt'))
 
-
-    def parse(self, str, content_type=None):
+    def parse (self, str, content_type=None):
         """ Parse an RDF document.
 
         Supports any RDFLib supported formats, see
@@ -77,12 +77,12 @@ class LinkedData(object):
 
         """
 
-        return self.graph().parse(data=str, format=formats.get(content_type, 'nt'))
+        return self.graph ().parse (data=str, format=formats.get (content_type, 'nt'))
 
 
 def iri_join (*args):
     parts = list (args)
-    if len(parts) < 2:
+    if len (parts) < 2:
         return parts[0]
 
     ret = [ unicode (parts.pop (0)).rstrip ("/") ]
@@ -99,20 +99,20 @@ def iri_join (*args):
             ret.append ('/' + p)
 
     trailing_slash = '/'
-    if fragment or has_suffix.search(parts[-1]):
+    if fragment or has_suffix.search (parts[-1]):
         trailing_slash = ''
 
     return "".join (ret) + trailing_slash
 
 
-def replace_bnode(graph, old, new):
+def replace_bnode (graph, old, new):
     for p, o in graph[old::]:
-        graph.remove((old, p, o))
-        graph.add((new, p, o))
+        graph.remove ( (old, p, o))
+        graph.add ( (new, p, o))
 
     for s, p in graph[::old]:
-        graph.remove((s, p, old))
-        graph.add((s, p, new))
+        graph.remove ( (s, p, old))
+        graph.add ( (s, p, new))
 
     return graph
 
@@ -122,7 +122,5 @@ def trimlines (str):
 
 
 def save_json (target, data):
-    with codecs.open(target, "wb", "UTF-8") as f:
-        f.write(trimlines (json.dumps (data, indent=4, ensure_ascii=False)) + "\n")
-
-
+    with codecs.open (target, "wb", "UTF-8") as f:
+        f.write (trimlines (json.dumps (data, indent=4, ensure_ascii=False)) + "\n")

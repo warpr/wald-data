@@ -28,7 +28,7 @@ def _shift5 (i):
 
 def b2a (integer):
     """ binary to ascii (zbase32) conversion. """
-    return "".join ([_MNET32[x] for x in _shift5(integer)])
+    return "".join ([_MNET32[x] for x in _shift5 (integer)])
 
 
 def a2b (string):
