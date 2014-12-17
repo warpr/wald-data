@@ -32,8 +32,8 @@ class DatastoreException (Exception):
 class Sparql (object):
 
     def __init__ (self, sparql_base, identifier):
-        self.query_iri = iri_join (sparql_base, identifier, 'query').rstrip('/')
-        self.update_iri = iri_join (sparql_base, identifier, 'update').rstrip('/')
+        self.query_iri = iri_join (sparql_base, identifier, 'query').rstrip ('/')
+        self.update_iri = iri_join (sparql_base, identifier, 'update').rstrip ('/')
 
     def clear (self, are_you_sure=False):
         if not are_you_sure:

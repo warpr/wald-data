@@ -187,15 +187,17 @@ def fuseki_config (site_root, graph):
         edit_graph = CONFIG[dataset + 'EditGraph']
         fuseki_graph.add ((edit_graph, a, TDB.GraphTDB))
         fuseki_graph.add ((edit_graph, TDB.dataset, rdf_dataset))
-        fuseki_graph.add ((edit_graph, TDB.graphName, URIRef (iri_join (base_iri, dataset, 'edit'))))
+        fuseki_graph.add ((edit_graph, TDB.graphName,
+                           URIRef (iri_join (base_iri, dataset, 'edit'))))
 
         data_graph = CONFIG[dataset + 'DataGraph']
         fuseki_graph.add ((data_graph, a, TDB.GraphTDB))
         fuseki_graph.add ((data_graph, TDB.dataset, rdf_dataset))
-        fuseki_graph.add ((data_graph, TDB.graphName, URIRef (iri_join (base_iri, dataset, 'data'))))
+        fuseki_graph.add ((data_graph, TDB.graphName,
+                           URIRef (iri_join (base_iri, dataset, 'data'))))
 
     servicesName = BNode ()
-    servicesList = rdflib.collection.Collection(fuseki_graph, servicesName, services)
+    rdflib.collection.Collection (fuseki_graph, servicesName, services)
     fuseki_graph.add ((CONFIG.Server, FUSEKI.services, servicesName))
 
     target = join ('etc', 'fuseki.ttl')
@@ -274,7 +276,7 @@ def ldf_config (site_root, graph):
         else:
             dataset['type'] = 'FusekiDatasource'
             dataset['settings'] = {
-                'endpoint': iri_join (fuseki_base, dataset_name, 'query').rstrip('/'),
+                'endpoint': iri_join (fuseki_base, dataset_name, 'query').rstrip ('/'),
                 'defaultGraph': iri_join (base_iri, dataset_name, 'data')
             }
 

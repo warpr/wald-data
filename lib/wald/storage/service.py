@@ -21,7 +21,7 @@ import werkzeug.utils
 from wald.storage.namespaces import *
 from werkzeug.routing import Map, Rule
 from werkzeug.utils import cached_property
-from werkzeug.wrappers import Request, Response
+from werkzeug.wrappers import Request
 
 
 class LimitedRequest (Request):
@@ -69,7 +69,7 @@ def make_endpoint (setup_graph, ld, dataset):
             raise werkzeug.exceptions.BadRequest (e)
 
         edit_id = edit.apply (request_graph)
-        return werkzeug.utils.redirect(edit_id, code=303)
+        return werkzeug.utils.redirect (edit_id, code=303)
 
     return endpoint
 
