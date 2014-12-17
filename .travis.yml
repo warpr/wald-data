@@ -1,0 +1,15 @@
+
+language:
+  - python
+  - node_js
+python: "2.7"
+node_js: "0.10"
+install:
+  - "npm install"
+  - "pip install -r requirements.txt --use-mirrors"
+script: bin/test
+
+notifications:
+  irc: "chat.freenode.net##senet"
+  email: false
+
