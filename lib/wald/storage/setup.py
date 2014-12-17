@@ -18,6 +18,7 @@ import rdflib.plugin
 import rdflib.store
 import requests
 import sys
+import urlparse
 import wald.storage.mint
 import wald.storage.tools
 
@@ -98,8 +99,8 @@ def process_config (graph):
     print ("# Site configuration")
     print ("")
     print ("base:        ", base)
-    print ("sparql:      ", graph[document:WALD.sparql:].next ())
-    print ("redis:       ", graph[document:WALD.redis:].next ())
+    print ("sparql:      ", graph.value (document, WALD.sparql))
+    print ("redis:       ", graph.value (document, WALD.redis))
 
     print ("")
     print ("# Datasets:")
@@ -125,7 +126,7 @@ def process_config (graph):
     for dataset in graph[document:WALD.dataset:]:
         # give the dataset a real identifier.
         if isinstance (dataset, BNode):
-            identifier = graph[dataset:DC.identifier:].next ()
+            identifier = graph.value (dataset, DC.identifier)
             dataset_new = URIRef (iri_join (base, identifier))
             wald.storage.tools.replace_bnode (graph, dataset, dataset_new)
 
@@ -135,8 +136,8 @@ def process_config (graph):
         print ("")
 
         graph.add ((dataset, a, WALD.Dataset))
-        graph.add ((dataset, WALD.editGraph, dataset + 'edit'))
-        graph.add ((dataset, WALD.dataGraph, dataset + 'data'))
+        graph.add ((dataset, WALD.editGraph, dataset + 'edit/'))
+        graph.add ((dataset, WALD.dataGraph, dataset + 'data/'))
         load_license_details (graph, dataset)
 
 
@@ -186,14 +187,15 @@ def fuseki_config (site_root, graph):
         edit_graph = CONFIG[dataset + 'EditGraph']
         fuseki_graph.add ((edit_graph, a, TDB.GraphTDB))
         fuseki_graph.add ((edit_graph, TDB.dataset, rdf_dataset))
-        fuseki_graph.add ((edit_graph, TDB.graphName, URIRef (base_iri + dataset + '/edit')))
+        fuseki_graph.add ((edit_graph, TDB.graphName, URIRef (iri_join (base_iri, dataset, 'edit'))))
 
         data_graph = CONFIG[dataset + 'DataGraph']
         fuseki_graph.add ((data_graph, a, TDB.GraphTDB))
         fuseki_graph.add ((data_graph, TDB.dataset, rdf_dataset))
-        fuseki_graph.add ((data_graph, TDB.graphName, URIRef (base_iri + dataset + '/data')))
+        fuseki_graph.add ((data_graph, TDB.graphName, URIRef (iri_join (base_iri, dataset, 'data'))))
 
     servicesName = BNode ()
+    servicesList = rdflib.collection.Collection(fuseki_graph, servicesName, services)
     fuseki_graph.add ((CONFIG.Server, FUSEKI.services, servicesName))
 
     target = join ('etc', 'fuseki.ttl')
@@ -206,7 +208,7 @@ def fuseki_config (site_root, graph):
 
 def ldf_config (site_root, graph):
     document, base_iri = graph[:WALD.base:].next ()
-    fuseki_base = 'http://localhost:3030/'
+    fuseki_base = graph.value (document, WALD.sparql)
 
     title = graph.value (document, DC.title)
     if not title:
@@ -272,7 +274,7 @@ def ldf_config (site_root, graph):
         else:
             dataset['type'] = 'FusekiDatasource'
             dataset['settings'] = {
-                'endpoint': iri_join (fuseki_base, dataset_name, 'query'),
+                'endpoint': iri_join (fuseki_base, dataset_name, 'query').rstrip('/'),
                 'defaultGraph': iri_join (base_iri, dataset_name, 'data')
             }
 
@@ -297,7 +299,7 @@ def ldf_config (site_root, graph):
     print ("Linked Data Fragments server configuration saved to %s" % (target))
 
 
-def fuseki_start (project_root, site_root):
+def fuseki_start (project_root, site_root, port):
     lines = [
         '#!/bin/sh',
         '',
@@ -305,7 +307,8 @@ def fuseki_start (project_root, site_root):
         'SITE_PATH=' + site_root,
         '',
         'cd "$FUSEKI_PATH"',
-        './fuseki-server --update "--conf=$SITE_PATH/etc/fuseki.ttl"',
+        './fuseki-server --port ' + unicode (port) +
+        ' --update --verbose "--conf=$SITE_PATH/etc/fuseki.ttl"',
         ''
     ]
 
@@ -403,7 +406,10 @@ def initialize (project_root, site_root):
     graph = load_site_config (project_root, site_root)
     process_config (graph)
     fuseki_config (site_root, graph)
-    fuseki_start (project_root, site_root)
+
+    document, base = graph[:WALD.base:].next ()
+    fuseki_port = urlparse.urlparse (graph.value (document, WALD.sparql)).port
+    fuseki_start (project_root, site_root, fuseki_port)
     ldf_config (site_root, graph)
     ldf_start (project_root, site_root)
     waldmeta_start (project_root, site_root)

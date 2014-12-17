@@ -16,6 +16,7 @@ import wald.storage.sparql
 import wald.storage.tools
 import werkzeug
 import werkzeug.exceptions
+import werkzeug.utils
 
 from wald.storage.namespaces import *
 from werkzeug.routing import Map, Rule
@@ -67,11 +68,8 @@ def make_endpoint (setup_graph, ld, dataset):
         except Exception as e:
             raise werkzeug.exceptions.BadRequest (e)
 
-        body = edit.apply (request_graph)
-        # tmp_graph = ld.graph ()
-        # body = tmp_graph.serialize(format='turtle')
-
-        return Response (body, mimetype='text/plain')
+        edit_id = edit.apply (request_graph)
+        return werkzeug.utils.redirect(edit_id, code=303)
 
     return endpoint
 

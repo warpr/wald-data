@@ -53,10 +53,16 @@ class Edit  (object):
         validate (self.sparql, changeset)
 
         edit_graph = self.setup_graph.value (self.dataset, WALD.editGraph)
-        edit_id = self.minter.sequential (edit_graph + '/')
+        edit_id = self.minter.sequential (edit_graph)
 
-        return sparql_update (self.data_graph, self.edit_graph,
-                              self.ld.graph (normalize (edit_id, changeset)))
+        edit_as_sparql = sparql_update (self.data_graph, self.edit_graph,
+                                        self.ld.graph (normalize (edit_id, changeset)))
+
+        if self.sparql.update (edit_as_sparql):
+            # FIXME: verify that the id exists, if it doesn't the edit wasn't applied.
+            return edit_id
+        else:
+            return False
 
 
 def validate (sparql, changeset):
@@ -201,41 +207,3 @@ def sparql_update (data_graph, edit_graph, changeset):
         where_clause (data_graph, removals, additions)))
 
     return "".join (parts)
-
-
-# def tmp ():
-
-#     update_url = 'http://fub.frob.mobi:8080/marmotta/sparql/update'
-
-#     t = """
-# INSERT DATA
-# {
-#     GRAPH <http://kuno.link/music/dataset>
-#     {
-#         <http://musicbrainz.org/artist/45a663b5-b1cb-4a91-bff6-2bef7bbfdd76#_>
-#         <http://xmlns.com/foaf/0.1/name>
-#         "Brittaney Spears"
-#     }
-# }
-# """
-#     example = """
-# DELETE DATA
-# {
-#     GRAPH <http://example/bookStore>
-#     {
-#         <http://example/book1>
-#         <http://purl.org/dc/elements/1.1/title>
-#         "Fundamentals of Compiler Desing"
-#     }
-# };
-
-# INSERT DATA
-# {
-#     GRAPH <http://example/bookStore>
-#     {
-#         <http://example/book1>
-#         <http://purl.org/dc/elements/1.1/title>
-#         "Fundamentals of Compiler Design"
-#     }
-# }
-# """
