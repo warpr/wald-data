@@ -1,4 +1,5 @@
 
+sudo: false
 language:
   - python
   - node_js
@@ -7,6 +8,10 @@ node_js: "0.10"
 install:
   - "bin/bootstrap"
 script: bin/test
+cache:
+  directories:
+  - $HOME/.local/share/waldmeta
+  - node_modules
 
 notifications:
   irc: "chat.freenode.net##senet"
