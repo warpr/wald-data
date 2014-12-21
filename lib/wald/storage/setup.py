@@ -23,7 +23,7 @@ import wald.storage.mint
 import wald.storage.tools
 
 from collections import OrderedDict
-from colorama import Fore, Back, Style
+from colorama import Fore, Style
 from os.path import join
 from rdflib.namespace import RDFS, XSD
 from rdflib.term import BNode, Literal, URIRef
@@ -40,25 +40,25 @@ class SiteTitleNotFound (Exception):
 
 
 def saved_file_notification (target, desc, saved=True):
-    padding = ' ' * (20 - len(target))
+    padding = ' ' * (20 - len (target))
     if saved:
         print ("".join ((
             Style.BRIGHT, Fore.WHITE, "       saved  ",
             Fore.GREEN, target, padding, Fore.WHITE, Style.RESET_ALL,
-            Style.DIM, "  ", Style.RESET_ALL, desc)))
+            Style.BRIGHT, Fore.BLACK, "  ", Style.RESET_ALL, desc)))
     else:
         print ("".join ((
-            Style.DIM, "     skipped  ", Style.RESET_ALL,
+            Style.BRIGHT, Fore.BLACK, "     skipped  ", Style.RESET_ALL,
             target, padding,
-            Style.DIM, "  (already exists, " + desc + ")", Style.RESET_ALL)))
+            Style.BRIGHT, Fore.BLACK, "  (already exists, " + desc + ")", Style.RESET_ALL)))
 
 
 def print_key_value (key, value, dim=False):
-    padding = ' ' * (12 - len(key))
+    padding = ' ' * (12 - len (key))
     if dim:
-        value = Style.DIM + value + Style.RESET_ALL
+        value = Style.BRIGHT + Fore.BLACK + value + Style.RESET_ALL
 
-    print ("".join ((Style.DIM, padding, key, "  ", Style.RESET_ALL, value)))
+    print ("".join ((Style.BRIGHT, Fore.BLACK, padding, key, "  ", Style.RESET_ALL, value)))
 
 
 def load_site_config (project_root, site_root):
@@ -191,6 +191,8 @@ def process_config (graph):
         print_key_value ('read-only', graph.value (dataset, WALD.readOnly))
         print ("")
 
+        # FIXME: is WALD.Dataset the same as http://vocab.deri.ie/void#Dataset ?
+
         graph.add ((dataset, a, WALD.Dataset))
         graph.add ((dataset, WALD.editGraph, dataset + 'edit/'))
         graph.add ((dataset, WALD.dataGraph, dataset + 'data/'))
@@ -294,7 +296,7 @@ def ldf_config (site_root, graph):
 
     output = OrderedDict ()
     output['title'] = title
-    output['baseURL'] = iri_join (base_iri, 'fragments')
+    output['baseURL'] = iri_join (base_iri, 'fragments').rstrip ('/')
     output['datasources'] = OrderedDict ()
 
     for dataset_node in graph[document:WALD.dataset]:
@@ -448,6 +450,7 @@ select 0
        join (site_root, 'bin', 'ldf'),
        join (site_root, 'bin', 'fuseki'))
 
+    file_desc = "GNU Screen development environment startup script"
     target = join ('bin', 'start')
     start_script_filename = join (site_root, target)
     if not os.path.isfile (start_script_filename):
@@ -456,35 +459,30 @@ select 0
         st = os.stat (start_script_filename)
         os.chmod (start_script_filename, st.st_mode | 0110)
 
-        saved_file_notification (target, "GNU Screen development environment startup script", saved=True)
+        saved_file_notification (target, file_desc, saved=True)
     else:
-        saved_file_notification (target, "GNU Screen development environment startup script", saved=False)
+        saved_file_notification (target, file_desc, saved=False)
 
+    file_desc = "GNU Screen development environment configuration"
     target = join ('etc', 'screenrc')
     screenrc_filename = join (site_root, target)
     if not os.path.isfile (screenrc_filename):
         with open (screenrc_filename, "wb") as f:
             f.write (screenrc)
 
-        saved_file_notification (target, "GNU Screen development environment configuration", saved=True)
+        saved_file_notification (target, file_desc, saved=True)
     else:
-        saved_file_notification (target, "GNU Screen development environment configuration", saved=False)
+        saved_file_notification (target, file_desc, saved=False)
 
 
 def nginx_upstream (name, iri):
     service = iri_parse (iri)
 
-    hostname = service.hostname
-    # NOTE: should we do a DNS lookup here, or is it safer to leave it as is for
-    # non-localhost names?
-    if hostname == 'localhost':
-        hostname = '127.0.0.1'
-
     return """
 upstream %s {
     server %s:%s weight=1 max_fails=0 fail_timeout=10s;
 }
-""" % (name, hostname, service.port)
+""" % (name, service.hostname, service.port)
 
 
 def nginx_proxy (location, backend):
@@ -504,7 +502,14 @@ def nginx (site_root, graph):
     document, base_iri = base_config (graph)
     base = iri_parse (base_iri)
 
-    import pprint
+    plain_text_types = " ".join ([
+        'application/javascript',
+        'application/json',
+        'application/ld+json',
+        'text/css',
+        'text/plain',
+        'text/turtle',
+    ])
 
     conf = [
         nginx_upstream ('fragments', graph.value (document, WALD.ldf)),
@@ -513,8 +518,8 @@ def nginx (site_root, graph):
 
     # FIXME: add SSL redirects if using SSL.
 
-    if not base.hostname.startswith('www'):
-        conf.append("""
+    if not base.hostname.startswith ('www'):
+        conf.append ("""
 server {
     listen %s;
     server_name www.%s;
@@ -523,28 +528,28 @@ server {
 }
 """ % (base.port, base.hostname, base.scheme, base.netloc))
 
-    conf.append("""
+    conf.append ("""
 server {
     listen %s;
     server_name %s;
 
 """ % (base.port, base.hostname))
 
-    conf.append("""
+    conf.append ("""
     gzip on;
     gzip_min_length 1024;
     gzip_buffers 4 32k;
-    gzip_types text/plain application/javascript text/css application/json application/ld+json text/turtle;
+    gzip_types %s;
 
     autoindex off;
     default_type  application/octet-stream;
     sendfile on;
     client_max_body_size 32m;
-""")
+    """ % (plain_text_types))
 
     for static in [ 'css', 'js', 'node', 'bower', 'img', 'export' ]:
-        padding = ' ' * (8 - len(static))
-        conf.append("    location /%s/ %s { alias %s/%s/; }" % (
+        padding = ' ' * (8 - len (static))
+        conf.append ("    location /%s/ %s { alias %s/%s/; }" % (
             static, padding, site_root, static))
 
     conf.append (nginx_proxy ('/', 'http://webservice'))

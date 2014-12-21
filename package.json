@@ -17,7 +17,7 @@
   "homepage": "http://waldmeta.org/",
   "dependencies": {
     "jsonld": "^0.3.2",
-    "ldf-server": "git+https://github.com/warpr/Server.js",
+    "ldf-server": "warpr/Server.js",
     "n3": "^0.3.1"
   }
 }
