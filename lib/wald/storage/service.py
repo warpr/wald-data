@@ -68,7 +68,11 @@ def make_endpoint (setup_graph, ld, dataset):
         except Exception as e:
             raise werkzeug.exceptions.BadRequest (e)
 
-        edit_id = edit.apply (request_graph)
+        try:
+            edit_id = edit.apply (request_graph)
+        except Exception as e:
+            raise werkzeug.exceptions.UnprocessableEntity (e)
+
         return werkzeug.utils.redirect (edit_id, code=303)
 
     return endpoint

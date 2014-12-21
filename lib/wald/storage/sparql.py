@@ -50,7 +50,6 @@ class Sparql (object):
             raise DatastoreException (response)
 
     def update (self, update):
-        print ("POST:", self.update_iri)
         response = requests.post (self.update_iri, data={ 'update': update })
         if response.status_code == 200:
             return True

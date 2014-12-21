@@ -15,7 +15,9 @@ import os
 import re
 import json
 import rdflib
+import urlparse
 
+from collections import namedtuple
 from os.path import join
 
 has_suffix = re.compile ('\\.[a-z0-9]{2,32}$')
@@ -103,6 +105,32 @@ def iri_join (*args):
         trailing_slash = ''
 
     return "".join (ret) + trailing_slash
+
+
+def iri_parse (iri):
+    parts = urlparse.urlparse (iri)
+
+    if parts.scheme == 'https':
+        if not parts.port:
+            port = 443
+            display_port = ''
+        else:
+            port = parts.port
+            display_port = ':' + unicode (port)
+    else:
+        if not parts.port:
+            port = 80
+            display_port = ''
+        else:
+            port = parts.port
+            display_port = ':' + unicode (port)
+
+    PI = namedtuple (
+        'ParsedIRI',
+        'scheme netloc path params query fragment username password hostname port display_port')
+
+    return PI (parts.scheme, parts.netloc, parts.path, parts.params, parts.query, parts.fragment,
+               parts.username, parts.password, parts.hostname, port, display_port)
 
 
 def replace_bnode (graph, old, new):

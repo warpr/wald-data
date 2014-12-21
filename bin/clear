@@ -18,12 +18,11 @@ from os.path import abspath, curdir, dirname
 activate.uninstalled ()
 activate.virtualenv ('waldmeta')
 
-import urlparse
 import wald.storage.setup
-import wald.storage.service
+import wald.storage.sparql
 
-from wald.storage.namespaces import a, WALD
-
+from wald.storage.namespaces import a, DC, WALD
+from wald.storage.tools import iri_join
 
 if __name__ == '__main__':
     project_root = dirname(dirname(abspath(__file__)))
@@ -31,13 +30,24 @@ if __name__ == '__main__':
     setup_graph = wald.storage.setup.load(project_root, site_root)
 
     site_config = setup_graph.value (None, a, WALD.SiteConfig)
-    webservice_iri = setup_graph.value (site_config, WALD.webservice)
-    webservice_port = urlparse.urlparse (webservice_iri).port
+    sparql_base = setup_graph.value (site_config, WALD.sparql)
 
-    # print(setup_graph.serialize(format='turtle'))
+    args = sys.argv[1:]
+    if " ".join (args) != 'it now plz I am sure':
+        print ("Are you sure?")
+        print ("Run clear again if you're sure, run it like you mean it:")
+        print ("")
+        print ("    clear it now plz I am sure")
+        print ("")
+        sys.exit (1)
 
-    application = wald.storage.service.make_application(setup_graph)
+    for dataset in setup_graph[:a:WALD.Dataset]:
+        identifier = setup_graph.value (dataset, DC.identifier)
+        sparql = wald.storage.sparql.Sparql (sparql_base, identifier)
 
-    from werkzeug.serving import run_simple
-    # http://werkzeug.pocoo.org/docs/0.9/serving/
-    run_simple('localhost', webservice_port, application, use_reloader=True)
+        print ("Clearing", iri_join(sparql_base, identifier))
+        sparql.clear (True)
+
+    print ("Done.")
+    sys.exit (0)
+

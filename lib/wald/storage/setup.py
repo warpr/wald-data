@@ -1,4 +1,5 @@
 #!/usr/bin/env python
+# -*- encoding: utf-8 -*-
 
 #   This file is part of wald:meta
 #   Copyright (C) 2014  Kuno Woudt <kuno@frob.nl>
@@ -18,15 +19,15 @@ import rdflib.plugin
 import rdflib.store
 import requests
 import sys
-import urlparse
 import wald.storage.mint
 import wald.storage.tools
 
 from collections import OrderedDict
+from colorama import Fore, Back, Style
 from os.path import join
 from rdflib.namespace import RDFS, XSD
 from rdflib.term import BNode, Literal, URIRef
-from wald.storage.tools import iri_join
+from wald.storage.tools import iri_join, iri_parse
 from wald.storage.namespaces import *
 
 
@@ -36,6 +37,28 @@ class InvalidDatasetName (Exception):
 
 class SiteTitleNotFound (Exception):
     pass
+
+
+def saved_file_notification (target, desc, saved=True):
+    padding = ' ' * (20 - len(target))
+    if saved:
+        print ("".join ((
+            Style.BRIGHT, Fore.WHITE, "       saved  ",
+            Fore.GREEN, target, padding, Fore.WHITE, Style.RESET_ALL,
+            Style.DIM, "  ", Style.RESET_ALL, desc)))
+    else:
+        print ("".join ((
+            Style.DIM, "     skipped  ", Style.RESET_ALL,
+            target, padding,
+            Style.DIM, "  (already exists, " + desc + ")", Style.RESET_ALL)))
+
+
+def print_key_value (key, value, dim=False):
+    padding = ' ' * (12 - len(key))
+    if dim:
+        value = Style.DIM + value + Style.RESET_ALL
+
+    print ("".join ((Style.DIM, padding, key, "  ", Style.RESET_ALL, value)))
 
 
 def load_site_config (project_root, site_root):
@@ -89,21 +112,53 @@ def load_license_details (graph, dataset):
     return license_name, license_iri
 
 
+def default_iri (graph, predicate, default):
+    # FIXME: there's probably a better way to set up defaults
+    document, dataset = graph[:WALD.dataset:].next ()
+    iri = graph.value (document, predicate)
+    if not iri:
+        iri = URIRef (default)
+
+    return iri
+
+
+def base_config (graph):
+    document, dataset = graph[:WALD.dataset:].next ()
+    base_iri = graph.value (document, WALD.base)
+
+    return document, base_iri
+
+
 def process_config (graph):
     # FIXME: bail out if required properties are missing.
 
-    document, base = graph[:WALD.base:].next ()
+    document, base_iri = base_config (graph)
     graph.add ((document, a, WALD.SiteConfig))
 
-    print ("")
-    print ("# Site configuration")
-    print ("")
-    print ("base:        ", base)
-    print ("sparql:      ", graph.value (document, WALD.sparql))
-    print ("redis:       ", graph.value (document, WALD.redis))
+    if not base_iri:
+        graph.add ((document, WALD.base, URIRef ("http://localhost:4000/")))
+        base_iri = graph.value (document, WALD.base)
+
+    if not graph.value (document, WALD.webservice):
+        graph.add ((document, WALD.webservice, URIRef ("http://localhost:4004/")))
+
+    if not graph.value (document, WALD.ldf):
+        graph.add ((document, WALD.ldf, URIRef ("http://localhost:4006/")))
+
+    if not graph.value (document, WALD.sparql):
+        graph.add ((document, WALD.sparql, URIRef ("http://localhost:4008/")))
 
     print ("")
-    print ("# Datasets:")
+    print ("".join ((Style.BRIGHT, "Site configuration → ", Style.RESET_ALL)))
+    print ("")
+    print_key_value ('base', graph.value (document, WALD.base))
+    print_key_value ('webservice', graph.value (document, WALD.webservice))
+    print_key_value ('ldf server', graph.value (document, WALD.ldf))
+    print_key_value ('sparql', graph.value (document, WALD.sparql))
+    print_key_value ('redis', graph.value (document, WALD.redis))
+
+    print (Style.RESET_ALL)
+    print ("".join ((Style.BRIGHT, "Datasets → ", Style.RESET_ALL)))
     print ("")
 
     meta = list (graph[:DC.identifier:Literal ("meta")])
@@ -114,7 +169,7 @@ def process_config (graph):
             has_meta_dataset = True
 
     if not has_meta_dataset:
-        dataset = URIRef (iri_join (base, 'meta'))
+        dataset = URIRef (iri_join (base_iri, 'meta'))
         graph.add ((document, WALD.dataset, dataset))
         graph.add ((dataset, DC.identifier, Literal ("meta")))
         graph.add ((dataset, DC.title, Literal ("wald:meta site metadata", lang="en")))
@@ -127,12 +182,13 @@ def process_config (graph):
         # give the dataset a real identifier.
         if isinstance (dataset, BNode):
             identifier = graph.value (dataset, DC.identifier)
-            dataset_new = URIRef (iri_join (base, identifier))
+            dataset_new = URIRef (iri_join (base_iri, identifier))
             wald.storage.tools.replace_bnode (graph, dataset, dataset_new)
 
     for dataset in graph[document:WALD.dataset:]:
-        print ("title:        %s  (%s)" % (graph.value (dataset, DC.title), dataset))
-        print ("read-only:   ", graph.value (dataset, WALD.readOnly))
+        print_key_value ('title', graph.value (dataset, DC.title))
+        print_key_value ('named graph', dataset, dim=True)
+        print_key_value ('read-only', graph.value (dataset, WALD.readOnly))
         print ("")
 
         graph.add ((dataset, a, WALD.Dataset))
@@ -144,7 +200,7 @@ def process_config (graph):
 def fuseki_config (site_root, graph):
     fuseki_graph = rdflib.Graph ()
 
-    document, base_iri = graph[:WALD.base:].next ()
+    document, base_iri = base_config (graph)
 
     CONFIG = rdflib.Namespace (base_iri + 'meta/fuseki/')
 
@@ -205,11 +261,11 @@ def fuseki_config (site_root, graph):
     with open (filename, "wb") as f:
         f.write (fuseki_graph.serialize (format='turtle'))
 
-    print ("Fuseki configuration saved to %s" % (target))
+    saved_file_notification (target, "Fuseki configuration", saved=True)
 
 
 def ldf_config (site_root, graph):
-    document, base_iri = graph[:WALD.base:].next ()
+    document, base_iri = base_config (graph)
     fuseki_base = graph.value (document, WALD.sparql)
 
     title = graph.value (document, DC.title)
@@ -238,6 +294,7 @@ def ldf_config (site_root, graph):
 
     output = OrderedDict ()
     output['title'] = title
+    output['baseURL'] = iri_join (base_iri, 'fragments')
     output['datasources'] = OrderedDict ()
 
     for dataset_node in graph[document:WALD.dataset]:
@@ -298,7 +355,7 @@ def ldf_config (site_root, graph):
     filename = join (site_root, target)
     wald.storage.tools.save_json (filename, output)
 
-    print ("Linked Data Fragments server configuration saved to %s" % (target))
+    saved_file_notification (target, "Linked Data Fragments Server configuration", saved=True)
 
 
 def fuseki_start (project_root, site_root, port):
@@ -314,29 +371,36 @@ def fuseki_start (project_root, site_root, port):
         ''
     ]
 
-    script = join (site_root, 'bin', 'fuseki')
+    target = join ('bin', 'fuseki')
+    script = join (site_root, target)
     with open (script, "wb") as f:
         f.write ("\n".join (lines))
     st = os.stat (script)
     os.chmod (script, st.st_mode | 0110)
 
+    saved_file_notification (target, "Fuseki startup script", saved=True)
 
-def ldf_start (project_root, site_root):
+
+def ldf_start (project_root, site_root, port):
     lines = [
         '#!/bin/sh',
         '',
         'WALD_PATH=' + project_root,
         'SITE_PATH=' + site_root,
         '',
-        '"$WALD_PATH/node_modules/.bin/ldf-server" "$SITE_PATH/etc/ldf-server.json" 5000 4',
+        '"$WALD_PATH/node_modules/.bin/ldf-server" "$SITE_PATH/etc/ldf-server.json" '
+        + unicode (port) + ' 4',
         ''
     ]
 
-    script = join (site_root, 'bin', 'ldf')
+    target = join ('bin', 'ldf')
+    script = join (site_root, target)
     with open (script, "wb") as f:
         f.write ("\n".join (lines))
     st = os.stat (script)
     os.chmod (script, st.st_mode | 0110)
+
+    saved_file_notification (target, "Linked Data Fragments Server startup script", saved=True)
 
 
 def waldmeta_start (project_root, site_root):
@@ -351,11 +415,14 @@ def waldmeta_start (project_root, site_root):
         ''
     ]
 
-    script = join (site_root, 'bin', 'waldmeta')
+    target = join ('bin', 'waldmeta')
+    script = join (site_root, target)
     with open (script, "wb") as f:
         f.write ("\n".join (lines))
     st = os.stat (script)
     os.chmod (script, st.st_mode | 0110)
+
+    saved_file_notification (target, "wald:meta webservice startup script", saved=True)
 
 
 def gnu_screen (site_root):
@@ -381,17 +448,122 @@ select 0
        join (site_root, 'bin', 'ldf'),
        join (site_root, 'bin', 'fuseki'))
 
-    start_script_filename = join (site_root, 'bin', 'start')
+    target = join ('bin', 'start')
+    start_script_filename = join (site_root, target)
     if not os.path.isfile (start_script_filename):
         with open (start_script_filename, "wb") as f:
             f.write (start)
         st = os.stat (start_script_filename)
         os.chmod (start_script_filename, st.st_mode | 0110)
 
-    screenrc_filename = join (site_root, 'etc', 'screenrc')
+        saved_file_notification (target, "GNU Screen development environment startup script", saved=True)
+    else:
+        saved_file_notification (target, "GNU Screen development environment startup script", saved=False)
+
+    target = join ('etc', 'screenrc')
+    screenrc_filename = join (site_root, target)
     if not os.path.isfile (screenrc_filename):
         with open (screenrc_filename, "wb") as f:
             f.write (screenrc)
+
+        saved_file_notification (target, "GNU Screen development environment configuration", saved=True)
+    else:
+        saved_file_notification (target, "GNU Screen development environment configuration", saved=False)
+
+
+def nginx_upstream (name, iri):
+    service = iri_parse (iri)
+
+    hostname = service.hostname
+    # NOTE: should we do a DNS lookup here, or is it safer to leave it as is for
+    # non-localhost names?
+    if hostname == 'localhost':
+        hostname = '127.0.0.1'
+
+    return """
+upstream %s {
+    server %s:%s weight=1 max_fails=0 fail_timeout=10s;
+}
+""" % (name, hostname, service.port)
+
+
+def nginx_proxy (location, backend):
+    return """
+    location %s {
+        proxy_set_header        Host            $host;
+        proxy_set_header        X-Real-IP       $remote_addr;
+        proxy_set_header        X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_buffering         off;
+        proxy_redirect          off;
+        proxy_pass              %s;
+    }
+""" % (location, backend)
+
+
+def nginx (site_root, graph):
+    document, base_iri = base_config (graph)
+    base = iri_parse (base_iri)
+
+    import pprint
+
+    conf = [
+        nginx_upstream ('fragments', graph.value (document, WALD.ldf)),
+        nginx_upstream ('webservice', graph.value (document, WALD.webservice))
+    ]
+
+    # FIXME: add SSL redirects if using SSL.
+
+    if not base.hostname.startswith('www'):
+        conf.append("""
+server {
+    listen %s;
+    server_name www.%s;
+
+    return 301 %s://%s$request_uri;
+}
+""" % (base.port, base.hostname, base.scheme, base.netloc))
+
+    conf.append("""
+server {
+    listen %s;
+    server_name %s;
+
+""" % (base.port, base.hostname))
+
+    conf.append("""
+    gzip on;
+    gzip_min_length 1024;
+    gzip_buffers 4 32k;
+    gzip_types text/plain application/javascript text/css application/json application/ld+json text/turtle;
+
+    autoindex off;
+    default_type  application/octet-stream;
+    sendfile on;
+    client_max_body_size 32m;
+""")
+
+    for static in [ 'css', 'js', 'node', 'bower', 'img', 'export' ]:
+        padding = ' ' * (8 - len(static))
+        conf.append("    location /%s/ %s { alias %s/%s/; }" % (
+            static, padding, site_root, static))
+
+    conf.append (nginx_proxy ('/', 'http://webservice'))
+    conf.append (nginx_proxy ('/fragments', 'http://fragments'))
+    # NOTE: I wonder if this works or if the linked data fragment server expects this
+    # at http://example.com/fragments/.well-known/genid in our setup.  Needs testing.
+    conf.append (nginx_proxy ('/.well-known/genid', 'http://fragments'))
+
+    conf.append ("}\n")
+
+    target = join ('etc', 'nginx.conf')
+    filename = join (site_root, target)
+    if not os.path.isfile (filename):
+        with open (filename, "wb") as f:
+            f.write ("\n".join (conf))
+
+        saved_file_notification (target, "NGINX configuration", saved=True)
+    else:
+        saved_file_notification (target, "NGINX configuration", saved=False)
 
 
 def initialize (project_root, site_root):
@@ -407,22 +579,30 @@ def initialize (project_root, site_root):
 
     graph = load_site_config (project_root, site_root)
     process_config (graph)
-    fuseki_config (site_root, graph)
 
-    document, base = graph[:WALD.base:].next ()
-    fuseki_port = urlparse.urlparse (graph.value (document, WALD.sparql)).port
+    print ("".join ((Style.BRIGHT, "Writing configuration → ", Style.RESET_ALL)))
+    print ("")
+
+    document, base_iri = base_config (graph)
+
+    fuseki_config (site_root, graph)
+    fuseki_port = iri_parse (graph.value (document, WALD.sparql)).port
     fuseki_start (project_root, site_root, fuseki_port)
+
     ldf_config (site_root, graph)
-    ldf_start (project_root, site_root)
-    waldmeta_start (project_root, site_root)
+    ldf_port = iri_parse (graph.value (document, WALD.ldf)).port
+    ldf_start (project_root, site_root, ldf_port)
+
     gnu_screen (site_root)
+    nginx (site_root, graph)
+    waldmeta_start (project_root, site_root)
 
     target = join ('etc', 'waldmeta.ttl')
     filename = join (site_root, target)
     with open (filename, "wb") as f:
         f.write (graph.serialize (format='turtle'))
 
-    print ("wald:meta configuration saved to %s" % (target))
+    saved_file_notification (target, "wald:meta configuration", saved=True)
     print ("")
 
     return load (project_root, site_root)
