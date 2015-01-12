@@ -22,6 +22,9 @@ from os.path import join
 
 has_suffix = re.compile ('\\.[a-z0-9]{2,32}$')
 
+# http://www.w3.org/2008/01/rdf-media-types
+#  var DEFAULT_ACCEPT = 'text/turtle;q=1.0,application/n-triples;q=0.7,text/n3;q=0.6';
+# https://github.com/LinkedDataFragments/Client.js/blob/master/lib/triple-pattern-fragments/FragmentsClient.js#L16
 formats = {
     'application/json': 'json-ld',
     'application/ld+json': 'json-ld',
