@@ -39,12 +39,12 @@ Step 2.  Configure your wald:meta site
 Create a new folder for your wald:meta site and copy etc/waldmeta.json to the root of your new
 site.  Edit the file, and then run init to configure your site:
 
-    ~/projects/waldmeta$ cd ..
+    ~/projects/wald-data$ cd ..
     ~/projects$ mkdir my-website
     ~/projects$ cd my-website
-    ~/projects/my-website$ cp ../waldmeta/etc/waldmeta.json .
+    ~/projects/my-website$ cp ../wald-data/etc/waldmeta.json .
     ~/projects/my-website$ vim waldmeta.json
-    ~/projects/my-website$ ../waldmeta/bin/init
+    ~/projects/my-website$ ../wald-data/bin/init
 
 init will generate various configuration files and startup scripts in the bin/ and etc/ folders
 of your site.  You can now run bin/start to run your site, this will start both the linked data
@@ -56,7 +56,7 @@ run.
 License
 =======
 
-Copyright (C) 2014  Kuno Woudt <kuno@frob.nl>
+Copyright (C) 2015  Kuno Woudt <kuno@frob.nl>
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of copyleft-next 0.3.0.  See [LICENSE.txt](LICENSE.txt).

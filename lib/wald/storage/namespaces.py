@@ -17,7 +17,7 @@ a = RDF.type
 
 CC = rdflib.Namespace ('http://creativecommons.org/ns#')
 CS = rdflib.Namespace ('http://purl.org/vocab/changeset/schema#')
-DC = rdflib.Namespace ('http://purl.org/dc/terms/')
+DC = rdflib.Namespace ('http://purl.org/dc/elements/1.1/')
 FUSEKI = rdflib.Namespace ('http://jena.apache.org/fuseki#')
 JASM = rdflib.Namespace ('http://jena.hpl.hp.com/2005/11/Assembler#')
 LI = rdflib.Namespace ('https://licensedb.org/ns#')
