@@ -7,7 +7,7 @@ ascii encoding, with support for very large numbers. """
 #   Copyright (C) 2008-2013  Kuno Woudt <kuno@frob.nl>
 #
 #   This program is free software: you can redistribute it and/or modify
-#   it under the terms of copyleft-next 0.3.0.  See LICENSE.txt.
+#   it under the terms of copyleft-next 0.3.1.  See copyleft-next-0.3.1.txt.
 
 from __future__ import absolute_import
 from __future__ import print_function

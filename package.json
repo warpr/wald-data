@@ -10,7 +10,7 @@
     "Linked Data"
   ],
   "author": "Kuno Woudt <kuno@frob.nl>",
-  "license": "copyleft-next 0.3.0",
+  "license": "copyleft-next 0.3.1",
   "bugs": {
     "url": "https://github.com/warpr/wald-data/issues"
   },

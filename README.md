@@ -1,8 +1,8 @@
 
-wald-storage
-============
+wald:data
+=========
 
-wald-storage is built on various third-party components:
+wald:data is built on various third-party components:
 
 - Fuseki is used as a database
 - Redis is used to mint identifiers
@@ -46,6 +46,8 @@ site.  Edit the file, and then run init to configure your site:
     ~/projects/my-website$ vim waldmeta.json
     ~/projects/my-website$ ../wald-data/bin/init
 
+FIXME: init should do copying of the example waldmeta.json.
+
 init will generate various configuration files and startup scripts in the bin/ and etc/ folders
 of your site.  You can now run bin/start to run your site, this will start both the linked data
 fragment server and fuseki.  For a production setup you probably want to have more control of how
@@ -56,8 +58,9 @@ run.
 License
 =======
 
-Copyright (C) 2015  Kuno Woudt <kuno@frob.nl>
+Copyright 2016  Kuno Woudt <kuno@frob.nl>
 
 This program is free software: you can redistribute it and/or modify
-it under the terms of copyleft-next 0.3.0.  See [LICENSE.txt](LICENSE.txt).
+it under the terms of copyleft-next 0.3.1.  See
+[copyleft-next-0.3.1.txt](copyleft-next-0.3.1.txt).
 
