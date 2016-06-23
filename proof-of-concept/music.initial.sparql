@@ -1,0 +1,8 @@
+INSERT DATA
+{
+    GRAPH <https://test.waldmeta.org/music/dataset>
+    {
+        <http://musicbrainz.org/artist/45a663b5-b1cb-4a91-bff6-2bef7bbfdd76#_>
+        <http://xmlns.com/foaf/0.1/name> "Brittaney Spears"
+    }
+}

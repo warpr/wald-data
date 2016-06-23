@@ -1,9 +1,16 @@
-#!/bin/sh
+#!/bin/bash
 
-# flake8 has certain errors ignored, but I haven't investigated how to add pep8
-# checks to it yet.  So we separetely run bin/frobstyle, which runs pep8 with
-# custom checks for wald:meta.
+SOURCE="${BASH_SOURCE[0]}"
+while [ -h "$SOURCE" ] ; do SOURCE="$(readlink "$SOURCE")"; done
+DIR="$( cd -P "$( dirname "$SOURCE" )" && pwd )"
 
-bin/flake8 lib/wald && bin/frobstyle lib/wald && bin/nosetests tests/*.py
+cd "$DIR/.."
 
+ESLINT="node_modules/.bin/eslint --rulesdir eslint_rules lib test"
+MOCHA="node_modules/mocha/bin/mocha --harmony --harmony-proxies --ui tdd --reporter spec test/test.js"
+
+export NODE_PATH="$DIR/../lib/"
+echo node path: $NODE_PATH
+
+$ESLINT && $MOCHA
 
