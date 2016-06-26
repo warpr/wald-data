@@ -7,5 +7,6 @@ before_script:
 all_tests:
   script:
    - bin/bootstrap
+   - bin/datastore
    - npm install
    - bin/test

@@ -11,7 +11,6 @@ cd jena-fuseki
 
 if [ -n "$GITLAB_CI" ]; then
     ./fuseki-server --update --config="$PROJECT_ROOT/etc/fuseki.ttl" &
-    sleep 8s
 else
     ./fuseki-server --update --config="$PROJECT_ROOT/etc/fuseki.ttl"
 fi
