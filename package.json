@@ -18,6 +18,7 @@
     "httpinvoke": "^1.4.0",
     "mocha": "^2.5.3",
     "urijs": "^1.18.1",
+    "wald-find": "git+https://gitlab.com/wald-meta/find.git",
     "when": "^3.7.7"
   }
 }

@@ -1,0 +1,11 @@
+image: fedora:24
+
+before_script:
+   - dnf -y update
+   - dnf -y install java-1.8.0-openjdk nodejs redis wget tar gzip
+
+all_tests:
+  script:
+   - bin/bootstrap
+   - npm install
+   - bin/test

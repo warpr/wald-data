@@ -5,5 +5,13 @@ if [ ! -x bin/datastore ]; then
     exit 1
 fi
 
+PROJECT_ROOT=`pwd`
+
 cd jena-fuseki
-./fuseki-server --update --config=../etc/fuseki.ttl
+
+if [ -n "$GITLAB_CI" ]; then
+    ./fuseki-server --update --config="$PROJECT_ROOT/etc/fuseki.ttl" &
+    sleep 8s
+else
+    ./fuseki-server --update --config="$PROJECT_ROOT/etc/fuseki.ttl"
+fi
