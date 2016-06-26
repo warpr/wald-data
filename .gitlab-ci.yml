@@ -2,7 +2,7 @@ image: fedora:24
 
 before_script:
    - dnf -y update
-   - dnf -y install java-1.8.0-openjdk nodejs redis wget tar gzip
+   - dnf -y install gzip java-1.8.0-openjdk nodejs redis tar wget which
 
 all_tests:
   script:
