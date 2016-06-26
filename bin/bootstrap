@@ -51,10 +51,6 @@ PACKAGE_DIR="apache-jena-fuseki-2.4.0"
 PACKAGE_FILENAME="$PACKAGE_DIR.tar.gz"
 DATA_TMP="$DATA_HOME/waldmeta/tmp"
 
-if [ -n "$GITLAB_CI" ]; then
-    mv /root/jena-fuseki .
-fi
-
 if [ ! -d jena-fuseki ]; then
     PACKAGE_SHA1=`pwd`/bin/setup/jena-fuseki.sha1sum
 
