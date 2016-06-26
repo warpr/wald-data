@@ -18,17 +18,16 @@ First, make sure the following are installed:
 
     java, redis, node.js, python, gnu screen
 
-On Fedora 23 (FIXME: check if additional package repos need to be enabled):
+On Fedora 24 (FIXME: check if additional package repos need to be enabled):
 
-    sudo dnf -y install java-1.8.0-openjdk redis screen
-    sudo dnf -y install python-virtualenv python-pip nodejs
+    sudo dnf -y install java-1.8.0-openjdk nodejs redis screen
+    sudo dnf -y install python-virtualenv python-pip
     bin/bootstrap
 
-The bootstrap script will install various third-party python libraries in a
-virtualenv.  It will also download Fuseki and the node.js [Linked Data
-Fragments](http://linkeddatafragments.org/software/)
-server. [Fuseki](https://jena.apache.org/documentation/serving_data/) is the SPARQL
-server included in the Apache Jena project.
+The bootstrap script will download and configure Apache Fuseki, and the
+node.js [Linked Data Fragments](http://linkeddatafragments.org/software/)
+server. [Fuseki](https://jena.apache.org/documentation/serving_data/) is
+the SPARQL server included in the Apache Jena project.
 
 
 License
