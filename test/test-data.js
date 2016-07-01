@@ -24,6 +24,70 @@
     }
 } (function (require) {
     return {
+        metaDataset: `
+@prefix config: <http://kuno.link/meta/fuseki/> .
+@prefix fuseki: <http://jena.apache.org/fuseki#> .
+@prefix jasm: <http://jena.hpl.hp.com/2005/11/Assembler#> .
+@prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix tdb: <http://jena.hpl.hp.com/2008/tdb#> .
+
+tdb:DatasetTDB rdfs:subClassOf jasm:RDFDataset .
+
+tdb:GraphTDB rdfs:subClassOf jasm:Model .
+
+config:metaDataGraph a tdb:GraphTDB ;
+    tdb:dataset config:metaDataset ;
+    tdb:graphName <https://test.waldmeta.org/meta/dataset> .
+
+config:metaEditsGraph a tdb:GraphTDB ;
+    tdb:dataset config:metaDataset ;
+    tdb:graphName <https://test.waldmeta.org/meta/edits> .
+
+config:metaService a fuseki:Service ;
+    fuseki:dataset config:metaDataset ;
+    fuseki:name "meta" ;
+    fuseki:serviceQuery "query", "sparql" ;
+    fuseki:serviceReadWriteGraphStore "data" ;
+    fuseki:serviceUpdate "update" ;
+    fuseki:serviceUpload "upload" .
+
+config:metaDataset a tdb:DatasetTDB ;
+    tdb:location "../test/store/meta.tdb" .
+
+`,
+        musicDataset: `
+@prefix config: <http://kuno.link/meta/fuseki/> .
+@prefix fuseki: <http://jena.apache.org/fuseki#> .
+@prefix jasm: <http://jena.hpl.hp.com/2005/11/Assembler#> .
+@prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix tdb: <http://jena.hpl.hp.com/2008/tdb#> .
+
+tdb:DatasetTDB rdfs:subClassOf jasm:RDFDataset .
+
+tdb:GraphTDB rdfs:subClassOf jasm:Model .
+
+config:musicDataGraph a tdb:GraphTDB ;
+    tdb:dataset config:musicDataset ;
+    tdb:graphName <https://test.waldmeta.org/music/dataset> .
+
+config:musicEditsGraph a tdb:GraphTDB ;
+    tdb:dataset config:musicDataset ;
+    tdb:graphName <https://test.waldmeta.org/music/edits> .
+
+config:musicService a fuseki:Service ;
+    fuseki:dataset config:musicDataset ;
+    fuseki:name "music" ;
+    fuseki:serviceQuery "query", "sparql" ;
+    fuseki:serviceReadWriteGraphStore "data" ;
+    fuseki:serviceUpdate "update" ;
+    fuseki:serviceUpload "upload" .
+
+config:musicDataset a tdb:DatasetTDB ;
+    tdb:location "../test/store/music.tdb" .
+
+`,
         insertCommand: `
 INSERT DATA
 {

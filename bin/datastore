@@ -9,9 +9,7 @@ PROJECT_ROOT=`pwd`
 
 cd jena-fuseki
 
-export FUSEKI_CONF="$PROJECT_ROOT/etc/fuseki.ttl"
-export FUSEKI_ARGS="--update --config=$FUSEKI_CONF"
+export FUSEKI_ARGS="--update"
 
 ./fuseki "$@"
 
-# ./fuseki-server --update --config="$PROJECT_ROOT/etc/fuseki.ttl"

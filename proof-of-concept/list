@@ -1,6 +1,0 @@
-#!/bin/sh
-
-curl --get http://localhost:3030/music/data \
-     --header 'Accept: text/turtle' \
-     --data-urlencode graph=https://test.waldmeta.org/music/dataset
-

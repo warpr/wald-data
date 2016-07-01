@@ -1,7 +1,0 @@
-#!/bin/sh
-
-curl -i -X POST \
-    --header 'Content-Type: application/sparql-update' \
-    --data "@music.initial.sparql" \
-    http://localhost:3030/music/update
-

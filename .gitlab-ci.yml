@@ -2,16 +2,11 @@ image: fedora:24
 
 before_script:
    - echo 'deltarpm=0' >> /etc/dnf/dnf.conf
-   - cat /etc/dnf/dnf.conf
    - dnf -y update
    - dnf -y install git gzip java-1.8.0-openjdk nodejs redis tar wget which procps-ng curl
    - bin/bootstrap
    - bin/datastore start
    - npm install
-   - ps aux
-   - curl http://localhost:3030
-   - sleep 10s
-   - curl http://localhost:3030
 
 all_tests:
   script:

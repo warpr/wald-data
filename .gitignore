@@ -11,3 +11,4 @@
 /jena-fuseki
 /node_modules/
 /store/*.tdb
+/test/store/*.tdb

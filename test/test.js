@@ -37,12 +37,52 @@
     const testData = require ('./test-data');
 
     suite ('fuseki', function () {
+        let resultMetaDataset = false;
+        let resultMusicDataset = false;
         let resultClear = false;
         let resultLoad = false;
         let resultVerifyInitial = false;
         let resultEdit = false;
 
+        test ('create meta dataset', function (done) {
+            return when (httpinvoke ('http://localhost:3030/$/datasets/meta', 'DELETE'))
+                .then (function (data) {
+                    // 200 OK if the dataset was deleted
+                    // 404 Not Found if it already wasn't there
+                    assert.include ([ 200, 404 ], data.statusCode);
+                }).then (function () {
+                    return when (httpinvoke ('http://localhost:3030/$/datasets/', 'POST', {
+                        headers: { 'Content-Type': 'text/turtle' },
+                        input: testData.metaDataset
+                    }));
+                }).then (function (data) {
+                    assert.equal (data.statusCode, 200);
+                    resultMetaDataset = true;
+                    done ();
+                }).catch (done);
+        });
+
+        test ('create music dataset', function (done) {
+            return when (httpinvoke ('http://localhost:3030/$/datasets/music', 'DELETE'))
+                .then (function (data) {
+                    // 200 OK if the dataset was deleted
+                    // 404 Not Found if it already wasn't there
+                    assert.include ([ 200, 404 ], data.statusCode);
+                }).then (function () {
+                    return when (httpinvoke ('http://localhost:3030/$/datasets/', 'POST', {
+                        headers: { 'Content-Type': 'text/turtle' },
+                        input: testData.musicDataset
+                    }));
+                }).then (function (data) {
+                    assert.equal (data.statusCode, 200);
+                    resultMusicDataset = true;
+                    done ();
+                }).catch (done);
+        });
+
         test ('clear', function (done) {
+            before (_ => resultMetaDataset && resultMusicDataset);
+
             return when (httpinvoke ('http://localhost:3030/music/update', 'POST', {
                 headers: { 'Content-Type': 'application/sparql-update' },
                 input: 'CLEAR ALL'

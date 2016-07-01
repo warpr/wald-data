@@ -1,7 +1,0 @@
-#!/bin/sh
-
-curl -i -X POST \
-    --header 'Content-Type: application/sparql-update' \
-    --data "CLEAR ALL" \
-    http://localhost:3030/music/update
-
