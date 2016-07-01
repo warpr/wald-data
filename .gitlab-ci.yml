@@ -3,10 +3,10 @@ image: fedora:24
 before_script:
    - dnf -y update
    - dnf -y install git gzip java-1.8.0-openjdk nodejs redis tar wget which
+   - bin/bootstrap
+   - bin/datastore start
+   - npm install
 
 all_tests:
   script:
-   - bin/bootstrap
-   - bin/datastore
-   - npm install
    - bin/test

@@ -9,8 +9,9 @@ PROJECT_ROOT=`pwd`
 
 cd jena-fuseki
 
-if [ -n "$GITLAB_CI" ]; then
-    ./fuseki-server --update --config="$PROJECT_ROOT/etc/fuseki.ttl" &
-else
-    ./fuseki-server --update --config="$PROJECT_ROOT/etc/fuseki.ttl"
-fi
+export FUSEKI_CONF="$PROJECT_ROOT/etc/fuseki.ttl"
+export FUSEKI_ARGS="--update --config=$FUSEKI_CONF"
+
+./fuseki "$@"
+
+# ./fuseki-server --update --config="$PROJECT_ROOT/etc/fuseki.ttl"

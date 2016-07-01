@@ -8,9 +8,6 @@
 
 'use strict';
 
-// FIXME: move test data to a separate file, then remove this.
-/* eslint  max-len:0 */
-
 (function (factory) {
     const imports = [
         'require',
@@ -18,8 +15,9 @@
         'httpinvoke',
         'urijs',
         'wald-find',
-//        'n3',
+        //        'n3',
         'when',
+        './test-data'
     ];
 
     if (typeof define === 'function' && define.amd) {
@@ -36,57 +34,7 @@
 //    const N3 = require ('n3');
     const when = require ('when');
     const find = require ('wald-find');
-
-    const fusekiTestData = {
-        insertCommand: `
-INSERT DATA
-{
-    GRAPH <https://test.waldmeta.org/music/dataset>
-    {
-        <http://musicbrainz.org/artist/45a663b5-b1cb-4a91-bff6-2bef7bbfdd76#_>
-        <http://xmlns.com/foaf/0.1/name> "Brittaney Spears"
-    }
-}
-`,
-        // FIXME: is the WHERE clause neccesary?
-        editCommand: `
-DELETE
-{
-    GRAPH <https://test.waldmeta.org/music/dataset>
-    {
-        <http://musicbrainz.org/artist/45a663b5-b1cb-4a91-bff6-2bef7bbfdd76#_> <http://xmlns.com/foaf/0.1/name> "Brittaney Spears"
-    }
-}
-INSERT
-{
-    GRAPH <https://test.waldmeta.org/music/dataset>
-    {
-        <http://musicbrainz.org/artist/45a663b5-b1cb-4a91-bff6-2bef7bbfdd76#_> <http://rdfs.org/sioc/types#Microblog> <https://twitter.com/britneySPEARS> .
-        <http://musicbrainz.org/artist/45a663b5-b1cb-4a91-bff6-2bef7bbfdd76#_> <http://xmlns.com/foaf/0.1/name> "Britney Spears"
-    }
-
-    GRAPH <https://test.waldmeta.org/music/edits>
-    {
-        <https://test.waldmeta.org/music/edits/2> <http://xmlns.com/foaf/0.1/name> "test edit 2"
-    }
-}
-WHERE
-{
-    GRAPH <https://test.waldmeta.org/music/dataset>
-    {
-        FILTER EXISTS
-        {
-            <http://musicbrainz.org/artist/45a663b5-b1cb-4a91-bff6-2bef7bbfdd76#_> <http://xmlns.com/foaf/0.1/name> "Brittaney Spears"
-        }
-        FILTER NOT EXISTS
-        {
-            <http://musicbrainz.org/artist/45a663b5-b1cb-4a91-bff6-2bef7bbfdd76#_> <http://rdfs.org/sioc/types#Microblog> <https://twitter.com/britneySPEARS> .
-            <http://musicbrainz.org/artist/45a663b5-b1cb-4a91-bff6-2bef7bbfdd76#_> <http://xmlns.com/foaf/0.1/name> "Britney Spears"
-        }
-    }
-}
-`
-    };
+    const testData = require ('./test-data');
 
     suite ('fuseki', function () {
         let resultClear = false;
@@ -112,7 +60,7 @@ WHERE
             // load initial data
             return when (httpinvoke ('http://localhost:3030/music/update', 'POST', {
                 headers: { 'Content-Type': 'application/sparql-update' },
-                input: fusekiTestData.insertCommand
+                input: testData.insertCommand
             })).then (function (data) {
                 // initial data was loaded
                 assert.equal (data.statusCode, 204);
@@ -152,7 +100,7 @@ WHERE
             // edit initial data
             return when (httpinvoke ('http://localhost:3030/music/update', 'POST', {
                 headers: { 'Content-Type': 'application/sparql-update' },
-                input: fusekiTestData.editCommand
+                input: testData.editCommand
             })).then (function (data) {
                 // update processed correctly
                 assert.equal (data.statusCode, 204);
