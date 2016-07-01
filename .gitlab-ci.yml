@@ -2,7 +2,7 @@ image: fedora:24
 
 before_script:
    - dnf -y update
-   - dnf -y install git gzip java-1.8.0-openjdk nodejs redis tar wget which
+   - dnf -y install git gzip java-1.8.0-openjdk nodejs redis tar wget which procps-ng curl
    - bin/bootstrap
    - bin/datastore start
    - npm install
