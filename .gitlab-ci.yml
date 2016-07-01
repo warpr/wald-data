@@ -6,6 +6,8 @@ before_script:
    - bin/bootstrap
    - bin/datastore start
    - npm install
+   - ps aux
+   - curl http://localhost:3030
 
 all_tests:
   script:
