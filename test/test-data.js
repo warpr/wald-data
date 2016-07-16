@@ -135,6 +135,36 @@ WHERE
         }
     }
 }
+`,
+        edit1: `
+@prefix cs: <http://purl.org/vocab/changeset/schema#>.
+@prefix dc: <http://purl.org/dc/elements/1.1/>.
+@prefix foaf: <http://xmlns.com/foaf/0.1/>.
+@prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>.
+@prefix sioc: <http://rdfs.org/sioc/types#>.
+
+[]  a cs:ChangeSet;
+    dc:creator <https://example.com/user/456>;
+    dc:date "2014-09-16T23:59:01Z";
+    cs:addition [
+        a rdf:Statement;
+        rdf:subject <http://musicbrainz.org/artist/45a663b5-b1cb-4a91-bff6-2bef7bbfdd76>;
+        rdf:predicate foaf:name;
+        rdf:object "ブリトニー・スピアーズ"
+    ], [
+        a rdf:Statement;
+        rdf:subject <http://musicbrainz.org/artist/45a663b5-b1cb-4a91-bff6-2bef7bbfdd76>;
+        rdf:predicate sioc:Microblog;
+        rdf:object <https://twitter.com/britneySPEARS>
+    ];
+    cs:removal [
+        a rdf:Statement;
+        rdf:subject <http://musicbrainz.org/artist/45a663b5-b1cb-4a91-bff6-2bef7bbfdd76>;
+        rdf:predicate foaf:name;
+        rdf:object "Britney Spears"
+    ];
+    cs:subjectOfChange <http://musicbrainz.org/artist/45a663b5-b1cb-4a91-bff6-2bef7bbfdd76>;
+    cs:changeReason "prefer japanese name".
 `
     };
 }));
