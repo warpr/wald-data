@@ -23,8 +23,10 @@
     }
 } (function (require) {
     const fuseki = require ('./fuseki');
+    const edits = require ('./edits');
 
     suite ('fuseki', fuseki.tests);
+    suite ('edits', edits.tests);
 }));
 
 // -*- mode: web -*-

@@ -165,7 +165,48 @@ WHERE
     ];
     cs:subjectOfChange <http://musicbrainz.org/artist/45a663b5-b1cb-4a91-bff6-2bef7bbfdd76>;
     cs:changeReason "prefer japanese name".
-`
+`,
+        newArtist: `
+        @prefix cs: <http://purl.org/vocab/changeset/schema#>.
+        @prefix dc: <http://purl.org/dc/elements/1.1/>.
+        @prefix foaf: <http://xmlns.com/foaf/0.1/>.
+        @prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>.
+        @prefix schema: <http://schema.org/>.
+
+[]  a cs:ChangeSet;
+        dc:creator <https://example.com/user/456>;
+        dc:date "2014-09-15T23:59:01Z";
+        cs:addition [
+            a rdf:Statement;
+            rdf:subject _:b100;
+            rdf:predicate foaf:name;
+            rdf:object "Autechre";
+        ], [
+            a rdf:Statement;
+            rdf:subject _:b100;
+            rdf:predicate rdf:type;
+            rdf:object schema:MusicGroup;
+        ];
+        cs:changeReason "Add new artist".
+`,
+        entities: `
+        @prefix wm: <https://waldmeta.org/ns#>.
+        @prefix schema: <http://schema.org/>.
+
+[] a wm:Configuration;
+    wm:baseUri <https://test.waldmeta.org/>;
+    wm:entity [
+        a wm:Entity;
+        wm:name "artist";
+        wm:prefix "ar";
+        wm:class schema:MusicGroup;
+    ], [
+        a wm:Entity;
+        wm:name "song";
+        wm:prefix "so";
+        wm:class schema:MusicRecording;
+    ].
+`,
     };
 }));
 
