@@ -1,5 +1,8 @@
 image: fedora:24
 
+services:
+  - redis:latest
+
 before_script:
    - echo 'deltarpm=0' >> /etc/dnf/dnf.conf
    - dnf -y update

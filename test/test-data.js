@@ -190,6 +190,7 @@ WHERE
         cs:changeReason "Add new artist".
 `,
         entities: `
+        @prefix cs: <http://purl.org/vocab/changeset/schema#>.
         @prefix wm: <https://waldmeta.org/ns#>.
         @prefix schema: <http://schema.org/>.
 
@@ -205,6 +206,11 @@ WHERE
         wm:name "song";
         wm:prefix "so";
         wm:class schema:MusicRecording;
+    ], [
+        a wm:Entity;
+        wm:name "edit";
+        wm:prefix "ed";
+        wm:class cs:ChangeSet;
     ].
 `,
     };
