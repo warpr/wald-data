@@ -1,14 +1,16 @@
 image: fedora:24
 
+services:
+  - redis:latest
+
 before_script:
    - echo 'deltarpm=0' >> /etc/dnf/dnf.conf
    - dnf -y update
-   - dnf -y install git gzip java-1.8.0-openjdk nodejs redis tar wget which procps-ng curl
-   - systemctl start redis
+   - dnf -y install git gzip java-1.8.0-openjdk nodejs tar wget which procps-ng curl
    - bin/bootstrap
    - bin/datastore start
    - npm install
 
 all_tests:
   script:
-   - bin/test
+   - bin/test redis://redis
