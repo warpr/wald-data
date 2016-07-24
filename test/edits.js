@@ -55,7 +55,7 @@
             datastore.addTriple ('_:b4', a, '_:b5');
 
             const all = edit.allBlankNodes (datastore);
-            all.sort();
+            all.sort ();
 
             assert.deepEqual (['_:artist', '_:b0', '_:b1', '_:b4', '_:b5'], all);
         });
@@ -84,27 +84,51 @@
             }).catch (done);
         });
 
-        test ('process ChangeSet document', function (done) {
+        test ('mint identifiers for ChangeSet', function (done) {
             before (_ => minter);
 
-            const editRegex = new RegExp ("^https://test.waldmeta.org/edit/ed");
+            const skolemizedBlankNode = new RegExp (
+                '^https://test.waldmeta.org/.well-known/genid/_b');
 
             minter
                 .reset ('edit')
-                .then (_ => edit.processChangeSet (minter, testData.newArtist))
+                .then (_ => edit.mintIdentifiers (minter, testData.newArtist))
                 .then (function (datastore) {
-                const c = find.factory (datastore);
-                const id = c.firstSubject (a, cs.ChangeSet);
+                    const c = find.factory (datastore);
+                    const id = c.firstSubject (a, cs.ChangeSet);
 
-                assert.equal (id, "https://test.waldmeta.org/edit/edyb");
+                    assert.equal (id, 'https://test.waldmeta.org/edit/edyb');
 
-                datastore.find (null, null, null).map (triple => {
-                    console.log (triple.subject, triple.predicate, triple.object);
-                });
+                    const additions = c.allObjects (id, cs.addition);
+                    assert.equal (2, additions.length);
 
-                done ();
+                    assert.match (additions[0], skolemizedBlankNode);
+                    assert.match (additions[1], skolemizedBlankNode);
+
+                    assert.notEqual (additions[0], additions[1]);
+
+                    assert.isOk (c.has (additions[0], a, rdf.Statement));
+                    assert.isOk (c.has (additions[0], rdf.subject, null));
+                    assert.isOk (c.has (additions[0], rdf.predicate, null));
+                    assert.isOk (c.has (additions[0], rdf.object, null));
+                    assert.isOk (c.has (additions[1], a, rdf.Statement));
+                    assert.isOk (c.has (additions[1], rdf.subject, null));
+                    assert.isOk (c.has (additions[1], rdf.predicate, null));
+                    assert.isOk (c.has (additions[1], rdf.object, null));
+
+                    done ();
+                }).catch (done);
+        });
+/*
+        test ('process ChangeSet document', function (done) {
+            find.tools.parseTurtle (testData.entities).then (entities => {
+                return edit.processChangeSet (entities, testData.newArtist);
+            }).then (output => {
+                console.log (output);
+                assert.equal (1, 2);
             }).catch (done);
         });
+*/
     }
 
     return { tests: tests };
