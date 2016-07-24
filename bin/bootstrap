@@ -79,6 +79,8 @@ if [ "$1" == "--skip-npm-install" ]; then
     exit 0
 fi
 
+npm install
+
 if [ ! -f node_modules/n3/browser/n3-browser.js ]; then
     cd node_modules/n3
     npm install
