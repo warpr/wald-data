@@ -74,7 +74,10 @@ if [ ! -d jena-fuseki ]; then
     fi
 fi
 
-npm install
+if [ "$1" == "--skip-npm-install" ]; then
+    echo 'Skipping "npm install" ... '
+    exit 0
+fi
 
 if [ ! -f node_modules/n3/browser/n3-browser.js ]; then
     cd node_modules/n3

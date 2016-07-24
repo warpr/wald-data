@@ -7,9 +7,9 @@ before_script:
    - echo 'deltarpm=0' >> /etc/dnf/dnf.conf
    - dnf -y update
    - dnf -y install git gzip java-1.8.0-openjdk nodejs redis tar wget which procps-ng curl
-   - bin/bootstrap
+   - bin/bootstrap --skip-npm-install
    - bin/datastore start
-   - npm install
+   - bin/bootstrap
 
 all_tests:
   script:
