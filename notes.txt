@@ -1,5 +1,8 @@
+Provide a memento interface on top of wald:data?
 
+http://mementoweb.org/about/
 
+wald:past
 
 
 Write interface

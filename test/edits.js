@@ -119,16 +119,35 @@
                     done ();
                 }).catch (done);
         });
-/*
+
+        test ('wrap section', function () {
+            const before = ['GRAPH <https://example.org>', '{'];
+            const after = ['}'];
+            const lines = [
+                '_:b0 rdf:type rdf:Statement.',
+                '_:b0 rdf:subject _:b1'
+            ];
+
+            const expected = [
+                'GRAPH <https://example.org>',
+                '{',
+                '    _:b0 rdf:type rdf:Statement.',
+                '    _:b0 rdf:subject _:b1',
+                '}',
+            ].join ('\n');
+
+            const result = edit.wrapSection (before, lines, after).join ('\n');
+            assert.equal (expected, result);
+        });
+
         test ('process ChangeSet document', function (done) {
             find.tools.parseTurtle (testData.entities).then (entities => {
-                return edit.processChangeSet (entities, testData.newArtist);
+                return edit.processChangeSet (entities, testData.edit1);
             }).then (output => {
                 console.log (output);
                 assert.equal (1, 2);
             }).catch (done);
         });
-*/
     }
 
     return { tests: tests };
