@@ -40,7 +40,28 @@
     const a = find.a;
     const cs = find.namespaces.cs;
     const rdf = find.namespaces.rdf;
-//    const wm = find.namespaces.wm;
+    //    const wm = find.namespaces.wm;
+
+    // FIXME: make this a proper assertion and it into a separate chai plugin
+    function assertLargeStringEqual (actual, expected) {
+        const expectedLines = expected.split ('\n');
+        const actualLines = actual.split ('\n');
+
+        let count = actualLines.length;
+        if (expectedLines.length > actualLines.length) {
+            count = expectedLines.length;
+        }
+
+        for (let i = 0; i < count; i++) {
+            if (expectedLines[i] !== actualLines[i]) {
+                assert.equal (actualLines[i], expectedLines[i], 'line ' + i);
+                return false;
+            }
+        }
+
+        // so, everything seems equal, let's do a final check just in case.
+        assert.equal (actual, expected);
+    }
 
     function tests () {
         let minter = false;
@@ -125,7 +146,8 @@
             const after = ['}'];
             const lines = [
                 '_:b0 rdf:type rdf:Statement.',
-                '_:b0 rdf:subject _:b1'
+                '_:b0 rdf:subject _:b1',
+                ''
             ];
 
             const expected = [
@@ -133,6 +155,7 @@
                 '{',
                 '    _:b0 rdf:type rdf:Statement.',
                 '    _:b0 rdf:subject _:b1',
+                '',
                 '}',
             ].join ('\n');
 
@@ -141,12 +164,22 @@
         });
 
         test ('process ChangeSet document', function (done) {
-            find.tools.parseTurtle (testData.entities).then (entities => {
-                return edit.processChangeSet (entities, testData.edit1);
-            }).then (output => {
-                console.log (output);
-                assert.equal (1, 2);
-            }).catch (done);
+            before (_ => minter);
+
+            minter
+                .reset ('bnode')
+                .then (() => minter.reset ('artist'))
+                .then (() => minter.reset ('song'))
+                .then (() => minter.reset ('edit'))
+                .then (() => find.tools.parseTurtle (testData.entities))
+                .then (entities => {
+                    return edit.processChangeSet (entities, testData.edit1);
+                }).then (output => {
+                    const expected = testData.expectedSparqlUpdate.trim ();
+
+                    assertLargeStringEqual (output.trim (), expected);
+                    done ();
+                }).catch (done);
         });
     }
 

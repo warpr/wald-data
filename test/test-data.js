@@ -213,9 +213,65 @@ WHERE
         wm:class cs:ChangeSet;
     ].
 `,
+        expectedSparqlUpdate: `
+DELETE
+{
+    GRAPH <https://test.waldmeta.org/dataset>
+    {
+        <http://musicbrainz.org/artist/45a663b5-b1cb-4a91-bff6-2bef7bbfdd76> <http://xmlns.com/foaf/0.1/name> "Britney Spears"
+    }
+}
+INSERT
+{
+    GRAPH <https://test.waldmeta.org/dataset>
+    {
+        <http://musicbrainz.org/artist/45a663b5-b1cb-4a91-bff6-2bef7bbfdd76> <http://rdfs.org/sioc/types#Microblog> <https://twitter.com/britneySPEARS>
+        <http://musicbrainz.org/artist/45a663b5-b1cb-4a91-bff6-2bef7bbfdd76> <http://xmlns.com/foaf/0.1/name> "ブリトニー・スピアーズ"
+    }
+
+    GRAPH <https://test.waldmeta.org/edits>
+    {
+        <https://test.waldmeta.org/.well-known/genid/_byb> <http://www.w3.org/1999/02/22-rdf-syntax-ns#object> <https://twitter.com/britneySPEARS>
+        <https://test.waldmeta.org/.well-known/genid/_byb> <http://www.w3.org/1999/02/22-rdf-syntax-ns#predicate> <http://rdfs.org/sioc/types#Microblog>
+        <https://test.waldmeta.org/.well-known/genid/_byb> <http://www.w3.org/1999/02/22-rdf-syntax-ns#subject> <http://musicbrainz.org/artist/45a663b5-b1cb-4a91-bff6-2bef7bbfdd76>
+        <https://test.waldmeta.org/.well-known/genid/_byb> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://www.w3.org/1999/02/22-rdf-syntax-ns#Statement>
+        <https://test.waldmeta.org/.well-known/genid/_byd> <http://www.w3.org/1999/02/22-rdf-syntax-ns#object> "Britney Spears"
+        <https://test.waldmeta.org/.well-known/genid/_byd> <http://www.w3.org/1999/02/22-rdf-syntax-ns#predicate> <http://xmlns.com/foaf/0.1/name>
+        <https://test.waldmeta.org/.well-known/genid/_byd> <http://www.w3.org/1999/02/22-rdf-syntax-ns#subject> <http://musicbrainz.org/artist/45a663b5-b1cb-4a91-bff6-2bef7bbfdd76>
+        <https://test.waldmeta.org/.well-known/genid/_byd> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://www.w3.org/1999/02/22-rdf-syntax-ns#Statement>
+        <https://test.waldmeta.org/.well-known/genid/_byn> <http://www.w3.org/1999/02/22-rdf-syntax-ns#object> "ブリトニー・スピアーズ"
+        <https://test.waldmeta.org/.well-known/genid/_byn> <http://www.w3.org/1999/02/22-rdf-syntax-ns#predicate> <http://xmlns.com/foaf/0.1/name>
+        <https://test.waldmeta.org/.well-known/genid/_byn> <http://www.w3.org/1999/02/22-rdf-syntax-ns#subject> <http://musicbrainz.org/artist/45a663b5-b1cb-4a91-bff6-2bef7bbfdd76>
+        <https://test.waldmeta.org/.well-known/genid/_byn> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://www.w3.org/1999/02/22-rdf-syntax-ns#Statement>
+        <https://test.waldmeta.org/edit/edyb> <http://purl.org/dc/elements/1.1/creator> <https://example.com/user/456>
+        <https://test.waldmeta.org/edit/edyb> <http://purl.org/dc/elements/1.1/date> "2014-09-16T23:59:01Z"
+        <https://test.waldmeta.org/edit/edyb> <http://purl.org/vocab/changeset/schema#addition> <https://test.waldmeta.org/.well-known/genid/_byb>
+        <https://test.waldmeta.org/edit/edyb> <http://purl.org/vocab/changeset/schema#addition> <https://test.waldmeta.org/.well-known/genid/_byn>
+        <https://test.waldmeta.org/edit/edyb> <http://purl.org/vocab/changeset/schema#changeReason> "prefer japanese name"
+        <https://test.waldmeta.org/edit/edyb> <http://purl.org/vocab/changeset/schema#removal> <https://test.waldmeta.org/.well-known/genid/_byd>
+        <https://test.waldmeta.org/edit/edyb> <http://purl.org/vocab/changeset/schema#subjectOfChange> <http://musicbrainz.org/artist/45a663b5-b1cb-4a91-bff6-2bef7bbfdd76>
+        <https://test.waldmeta.org/edit/edyb> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://purl.org/vocab/changeset/schema#ChangeSet>
+    }
+}
+WHERE
+{
+    GRAPH <https://test.waldmeta.org/dataset>
+    {
+        FILTER EXISTS
+        {
+            <http://musicbrainz.org/artist/45a663b5-b1cb-4a91-bff6-2bef7bbfdd76> <http://xmlns.com/foaf/0.1/name> "Britney Spears"
+        }
+
+        FILTER NOT EXISTS
+        {
+            <http://musicbrainz.org/artist/45a663b5-b1cb-4a91-bff6-2bef7bbfdd76> <http://rdfs.org/sioc/types#Microblog> <https://twitter.com/britneySPEARS>
+            <http://musicbrainz.org/artist/45a663b5-b1cb-4a91-bff6-2bef7bbfdd76> <http://xmlns.com/foaf/0.1/name> "ブリトニー・スピアーズ"
+        }
+    }
+}
+`,
     };
 }));
 
 // -*- mode: web -*-
 // -*- engine: jsx -*-
-
