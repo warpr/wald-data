@@ -29,6 +29,7 @@
   },
   "scripts": {
     "start": "bin/api start",
-    "stop": "bin/api stop"
+    "stop": "bin/api stop",
+    "test": "bin/test"
   }
 }

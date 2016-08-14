@@ -11,7 +11,9 @@
 (function (factory) {
     const imports = [
         'require',
-        './fuseki',
+        'chai',
+        'supertest',
+        '../lib/app',
     ];
 
     if (typeof define === 'function' && define.amd) {
@@ -22,13 +24,21 @@
         console.log ('Module system not recognized, please use AMD or CommonJS');
     }
 } (function (require) {
-    const fuseki = require ('./fuseki');
-    const edits = require ('./edits');
-    const app = require ('./app');
+    const app = require ('../lib/app');
+    // const assert = require ('chai').assert;
+    const supertest = require ('supertest');
 
-    suite ('fuseki', fuseki.tests);
-    suite ('edits', edits.tests);
-    suite ('app', app.tests);
+    function tests () {
+        test ('hello', function (done) {
+            supertest (app)
+                .get ('/')
+                .set ('Accept', 'application/json')
+                .expect ('Content-Type', 'text/html; charset=utf-8')
+                .expect (200, 'Hello!\n', done)
+        });
+    }
+
+    return { tests: tests };
 }));
 
 // -*- mode: web -*-
