@@ -13,6 +13,7 @@
         'require',
         'chai',
         'supertest',
+        './test-data',
         '../lib/app',
     ];
 
@@ -27,6 +28,7 @@
     const app = require ('../lib/app');
     const assert = require ('chai').assert;
     const supertest = require ('supertest');
+    const testData = require ('./test-data');
 
     const entityConfiguration = {
         baseUri: 'https://test.waldmeta.org/',
@@ -47,6 +49,16 @@
             }
 
             assert.deepEqual (expected, app.buildRoutes (entityConfiguration));
+        });
+
+        test ('create edit', function (done) {
+            app.factory ().then (app => {
+                supertest (app)
+                    .post ('/edits')
+                    .set ('Content-Type', 'text/turtle')
+                    .send (testData.newArtist)
+                    .expect (200, done);
+            });
         });
 
         test ('hello', function (done) {

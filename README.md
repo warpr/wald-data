@@ -20,7 +20,9 @@ First, make sure the following are installed:
 
 On Fedora 24 (FIXME: check if additional package repos need to be enabled):
 
-    sudo dnf -y install java-1.8.0-openjdk nodejs redis screen
+    sudo dnf -y install java-1.8.0-openjdk nodejs redis
+    sudo systemctl enable redis
+    sudo systemctl start redis
     bin/bootstrap
 
 The bootstrap script will download and configure Apache Fuseki, and the

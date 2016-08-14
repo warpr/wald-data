@@ -1,13 +1,9 @@
 #!/bin/bash
 
 function req {
-    echo "java is required, on Fedora you can install that with:"
+    echo "java, redis and nodejs are required, on Fedora 24 you can install those with:"
     echo ""
-    echo "    sudo dnf -y install java-1.8.0-openjdk"
-    echo ""
-    echo "redis is required, on Fedora you can install that with:"
-    echo ""
-    echo "    sudo apt-get install redis"
+    echo "    sudo dnf -y install java-1.8.0-openjdk redis nodejs"
     echo ""
     exit 1
 }
@@ -41,6 +37,11 @@ fi
 
 REDIS=`which redis-cli`
 if [ -z "$REDIS" ]; then
+    req
+fi
+
+NPM=`which npm`
+if [ -z "$NPM" ]; then
     req
 fi
 
