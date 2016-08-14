@@ -13,6 +13,7 @@
         'require',
         'chai',
         'supertest',
+        'wald-find',
         './test-data',
         '../lib/app',
     ];
@@ -28,27 +29,17 @@
     const app = require ('../lib/app');
     const assert = require ('chai').assert;
     const supertest = require ('supertest');
+    const find = require ('wald-find');
     const testData = require ('./test-data');
 
-    const entityConfiguration = {
-        baseUri: 'https://test.waldmeta.org/',
-        entities: { edit: 'ed', song: 'so', artist: 'ar' },
-        plurals: { revision: 'revisions', song: 'songs', artist: 'artists' },
-        types: {
-            'http://purl.org/vocab/changeset/schema#ChangeSet': 'revision',
-            'http://schema.org/MusicRecording': 'song',
-            'http://schema.org/MusicGroup': 'artist',
-        }
-    };
-
     function tests () {
-        test ('routes', function () {
-            const expected = {
-                GET: { '/revision/:id': app.getEdit },
-                POST: { '/revisions/?': app.createEdit },
-            }
-
-            assert.deepEqual (expected, app.buildRoutes (entityConfiguration));
+        test ('routes', function (done) {
+            return find.tools.parseTurtle (testData.entities).then (datastore => {
+                const routes = app.buildRoutes (datastore);
+                assert.isFunction (routes.GET['/edit/:id']);
+                assert.isFunction (routes.POST['/edits/?']);
+                done ();
+            });
         });
 
         test ('create edit', function (done) {
