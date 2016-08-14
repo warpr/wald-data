@@ -42,8 +42,8 @@
     function tests () {
         test ('routes', function () {
             const expected = {
-                GET: { '/revision/:id': 'getEdit' },
-                POST: { '/revisions/?': 'createEdit' },
+                GET: { '/revision/:id': app.getEdit },
+                POST: { '/revisions/?': app.createEdit },
             }
 
             assert.deepEqual (expected, app.buildRoutes (entityConfiguration));
@@ -52,7 +52,7 @@
         test ('hello', function (done) {
             app.factory ().then (app => {
                 supertest (app)
-                    .get ('/')
+                    .get ('/edit/ed123')
                     .set ('Accept', 'application/json')
                     .expect ('Content-Type', 'text/html; charset=utf-8')
                     .expect (200, 'Hello!\n', done)
