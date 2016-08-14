@@ -10,7 +10,8 @@ fi
 if [ "$1" = "start" ]; then
     bin/datastore start
     # see http://stackoverflow.com/a/33922979/7700
-    node lib/server.js "build a long argument list so process.title can be set to a long name" &
+    ARG="build a long argument list so process.title can be set to a long name"
+    node --harmony-proxies lib/server.js "$ARG" &
     sleep 2s
     exit 0
 fi

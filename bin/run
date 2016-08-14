@@ -1,0 +1,5 @@
+#!/bin/sh
+
+ARG="build a long argument list so process.title can be set to a long name"
+node --harmony-proxies lib/server.js "$ARG"
+

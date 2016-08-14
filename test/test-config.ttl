@@ -1,0 +1,25 @@
+@prefix cs: <http://purl.org/vocab/changeset/schema#>.
+@prefix wm: <https://waldmeta.org/ns#>.
+@prefix schema: <http://schema.org/>.
+
+[] a wm:Configuration;
+    wm:baseUri <https://test.waldmeta.org/>;
+    wm:entity [
+        a wm:Entity;
+        wm:name "artist";
+        wm:plural "artists";
+        wm:prefix "ar";
+        wm:class schema:MusicGroup;
+    ], [
+        a wm:Entity;
+        wm:name "song";
+        wm:plural "songs";
+        wm:prefix "so";
+        wm:class schema:MusicRecording;
+    ], [
+        a wm:Entity;
+        wm:name "edit";
+        wm:plural "edits";
+        wm:prefix "ed";
+        wm:class cs:ChangeSet;
+    ].

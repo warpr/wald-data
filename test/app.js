@@ -25,16 +25,38 @@
     }
 } (function (require) {
     const app = require ('../lib/app');
-    // const assert = require ('chai').assert;
+    const assert = require ('chai').assert;
     const supertest = require ('supertest');
 
+    const entityConfiguration = {
+        baseUri: 'https://test.waldmeta.org/',
+        entities: { edit: 'ed', song: 'so', artist: 'ar' },
+        plurals: { revision: 'revisions', song: 'songs', artist: 'artists' },
+        types: {
+            'http://purl.org/vocab/changeset/schema#ChangeSet': 'revision',
+            'http://schema.org/MusicRecording': 'song',
+            'http://schema.org/MusicGroup': 'artist',
+        }
+    };
+
     function tests () {
+        test ('routes', function () {
+            const expected = {
+                GET: { '/revision/:id': 'getEdit' },
+                POST: { '/revisions/?': 'createEdit' },
+            }
+
+            assert.deepEqual (expected, app.buildRoutes (entityConfiguration));
+        });
+
         test ('hello', function (done) {
-            supertest (app)
-                .get ('/')
-                .set ('Accept', 'application/json')
-                .expect ('Content-Type', 'text/html; charset=utf-8')
-                .expect (200, 'Hello!\n', done)
+            app.factory ().then (app => {
+                supertest (app)
+                    .get ('/')
+                    .set ('Accept', 'application/json')
+                    .expect ('Content-Type', 'text/html; charset=utf-8')
+                    .expect (200, 'Hello!\n', done)
+            });
         });
     }
 
