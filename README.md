@@ -16,12 +16,11 @@ Step 1.  Install and configure all your requirements
 
 First, make sure the following are installed:
 
-    java, redis, node.js, python, gnu screen
+    java, redis, node.js
 
 On Fedora 24 (FIXME: check if additional package repos need to be enabled):
 
     sudo dnf -y install java-1.8.0-openjdk nodejs redis screen
-    sudo dnf -y install python-virtualenv python-pip
     bin/bootstrap
 
 The bootstrap script will download and configure Apache Fuseki, and the
