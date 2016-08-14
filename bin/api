@@ -1,0 +1,28 @@
+#!/bin/sh
+
+PROCESS_TITLE="wald:data test server"
+
+if [ ! -x bin/api ]; then
+    echo "Please run bin/api from the project root"
+    exit 1
+fi
+
+if [ "$1" = "start" ]; then
+    bin/datastore start
+    # see http://stackoverflow.com/a/33922979/7700
+    node lib/server.js "build a long argument list so process.title can be set to a long name" &
+    sleep 2s
+    exit 0
+fi
+
+if [ "$1" = "stop" ]; then
+    echo Stopping "$PROCESS_TITLE"
+    killall -SIGINT "$PROCESS_TITLE"
+    bin/datastore stop
+    exit 0
+fi
+
+echo "bin/api -- wald:data test server"
+echo ""
+echo "usage: bin/api [start|stop]"
+echo ""

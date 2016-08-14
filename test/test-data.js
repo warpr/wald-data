@@ -128,6 +128,7 @@ WHERE
         {
             <http://musicbrainz.org/artist/45a663b5-b1cb-4a91-bff6-2bef7bbfdd76#_> <http://xmlns.com/foaf/0.1/name> "Brittaney Spears"
         }
+
         FILTER NOT EXISTS
         {
             <http://musicbrainz.org/artist/45a663b5-b1cb-4a91-bff6-2bef7bbfdd76#_> <http://rdfs.org/sioc/types#Microblog> <https://twitter.com/britneySPEARS> .
@@ -144,7 +145,7 @@ WHERE
 @prefix sioc: <http://rdfs.org/sioc/types#>.
 
 []  a cs:ChangeSet;
-    dc:creator <https://example.com/user/456>;
+    dc:creator <https://example.com/users/456>;
     dc:date "2014-09-16T23:59:01Z";
     cs:addition [
         a rdf:Statement;
@@ -167,14 +168,14 @@ WHERE
     cs:changeReason "prefer japanese name".
 `,
         newArtist: `
-        @prefix cs: <http://purl.org/vocab/changeset/schema#>.
-        @prefix dc: <http://purl.org/dc/elements/1.1/>.
-        @prefix foaf: <http://xmlns.com/foaf/0.1/>.
-        @prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>.
-        @prefix schema: <http://schema.org/>.
+@prefix cs: <http://purl.org/vocab/changeset/schema#>.
+@prefix dc: <http://purl.org/dc/elements/1.1/>.
+@prefix foaf: <http://xmlns.com/foaf/0.1/>.
+@prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>.
+@prefix schema: <http://schema.org/>.
 
 []  a cs:ChangeSet;
-        dc:creator <https://example.com/user/456>;
+        dc:creator <https://example.com/users/456>;
         dc:date "2014-09-15T23:59:01Z";
         cs:addition [
             a rdf:Statement;
@@ -190,25 +191,28 @@ WHERE
         cs:changeReason "Add new artist".
 `,
         entities: `
-        @prefix cs: <http://purl.org/vocab/changeset/schema#>.
-        @prefix wm: <https://waldmeta.org/ns#>.
-        @prefix schema: <http://schema.org/>.
+@prefix cs: <http://purl.org/vocab/changeset/schema#>.
+@prefix wm: <https://waldmeta.org/ns#>.
+@prefix schema: <http://schema.org/>.
 
 [] a wm:Configuration;
     wm:baseUri <https://test.waldmeta.org/>;
     wm:entity [
         a wm:Entity;
         wm:name "artist";
+        wm:plural "artists";
         wm:prefix "ar";
         wm:class schema:MusicGroup;
     ], [
         a wm:Entity;
         wm:name "song";
+        wm:plural "songs";
         wm:prefix "so";
         wm:class schema:MusicRecording;
     ], [
         a wm:Entity;
         wm:name "edit";
+        wm:plural "edits";
         wm:prefix "ed";
         wm:class cs:ChangeSet;
     ].
@@ -243,7 +247,7 @@ INSERT
         <https://test.waldmeta.org/.well-known/genid/_byn> <http://www.w3.org/1999/02/22-rdf-syntax-ns#predicate> <http://xmlns.com/foaf/0.1/name>
         <https://test.waldmeta.org/.well-known/genid/_byn> <http://www.w3.org/1999/02/22-rdf-syntax-ns#subject> <http://musicbrainz.org/artist/45a663b5-b1cb-4a91-bff6-2bef7bbfdd76>
         <https://test.waldmeta.org/.well-known/genid/_byn> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://www.w3.org/1999/02/22-rdf-syntax-ns#Statement>
-        <https://test.waldmeta.org/edit/edyb> <http://purl.org/dc/elements/1.1/creator> <https://example.com/user/456>
+        <https://test.waldmeta.org/edit/edyb> <http://purl.org/dc/elements/1.1/creator> <https://example.com/users/456>
         <https://test.waldmeta.org/edit/edyb> <http://purl.org/dc/elements/1.1/date> "2014-09-16T23:59:01Z"
         <https://test.waldmeta.org/edit/edyb> <http://purl.org/vocab/changeset/schema#addition> <https://test.waldmeta.org/.well-known/genid/_byb>
         <https://test.waldmeta.org/edit/edyb> <http://purl.org/vocab/changeset/schema#addition> <https://test.waldmeta.org/.well-known/genid/_byn>

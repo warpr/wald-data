@@ -81,7 +81,7 @@
             assert.deepEqual (['_:artist', '_:b0', '_:b1', '_:b4', '_:b5'], all);
         });
 
-        test ('edits', function (done) {
+        test ('minter configuration', function (done) {
             find.tools.parseTurtle (testData.entities).then (function (datastore) {
                 const cfg = edit.entityConfiguration (datastore);
 
@@ -91,6 +91,11 @@
                         artist: 'ar',
                         song: 'so',
                         edit: 'ed',
+                    },
+                    plurals: {
+                        artist: 'artists',
+                        song: 'songs',
+                        edit: 'edits',
                     },
                     types: {
                         'http://schema.org/MusicGroup': 'artist',
