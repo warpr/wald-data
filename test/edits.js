@@ -87,6 +87,7 @@
 
                 assert.deepEqual ({
                     baseUri: 'https://test.waldmeta.org/',
+                    dataset: 'music',
                     entities: {
                         artist: 'ar',
                         song: 'so',

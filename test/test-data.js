@@ -197,6 +197,7 @@ WHERE
 
 [] a wm:Configuration;
     wm:baseUri <https://test.waldmeta.org/>;
+    wm:dataset "music";
     wm:entity [
         a wm:Entity;
         wm:name "artist";

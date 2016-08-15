@@ -10,6 +10,7 @@ wald:data is built on various third-party components:
 
 Follow the instructions below to set things up.
 
+See [introduction.md](docs/introduction.md) if you're not familiar with wald:meta.
 
 Step 1.  Install and configure all your requirements
 ----------------------------------------------------
@@ -30,6 +31,11 @@ node.js [Linked Data Fragments](http://linkeddatafragments.org/software/)
 server. [Fuseki](https://jena.apache.org/documentation/serving_data/) is
 the SPARQL server included in the Apache Jena project.
 
+On OSX (using homebrew):
+
+    brew install redis
+    brew install md5sha1sum
+    brew services start redis
 
 License
 =======
